@@ -28,11 +28,23 @@ Python 3.10-3.13 and `ffmpeg` on the PATH.
 git clone https://github.com/KantiPT400/roomplan && cd roomplan
 python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-bash scripts/fetch_models.sh                           # Depth Anything V2 small (ONNX, 99 MB), checksum-verified
+python scripts/fetch_models.py                         # Depth Anything V2 small (ONNX, 99 MB), checksum-verified
 python -m roomplan /path/to/stray_scanner_export       # e.g. the sample single_room/c00a170fe1
 ```
 
 Everything runs on CPU, offline once the weights are fetched; nothing calls our infrastructure.
+Useful flags: `--drift off` (ablation), `--no-damage` (skip wall damage), `--reuse` (video/photo: re-run only the
+geometry on a previous run's registration). Tests: `python -m pytest tests/` (schema validation of every output,
+end-to-end on a rendered flat with exact ground truth).
+
+## Status at a glance (details and failing gates: docs/report.md, docs/compliance_matrix.md)
+
+| | LiDAR | Photo | Video |
+|---|---|---|---|
+| runs end to end, same output contract | yes | yes | yes |
+| synthetic ground truth (exact) | walls 24/24 within 2 cm, ceilings within 2 mm, doors 5/6 within 2 cm | not measured | not measured |
+| real data | two captures of one apartment: planes agree to a median 2.7 cm; 1 cm repeatability gate fails | footprint 0.96 x LiDAR, rooms under-segmented | partial (largest registered stretch) |
+| drift | loop residual 11.4 -> 2.1 cm with the pose graph | n/a | n/a |
 
 ## Reproduce every reported number
 
