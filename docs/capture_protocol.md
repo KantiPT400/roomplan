@@ -5,6 +5,8 @@ runs one command on that folder: `python -m roomplan <folder>`.
 
 ## Before you start (all three ways)
 - Turn on **all the lights** and open the curtains. Close the doors of any **mirrored** wardrobes.
+- Open every room door **all the way** (flat against the wall). A half-open door hides part of the doorway
+  and the door width comes out too narrow.
 - Walk **slowly** the whole time (about one step per second) and hold the phone at **chest height**.
 - Never cover the camera with your fingers. Do not change the zoom while capturing.
 

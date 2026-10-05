@@ -41,5 +41,5 @@ python scripts/synth_benchmark.py --seeds 0 1 2 3 4 5 --out "$OUT/synth" --data 
 
 echo "== Benchmark (repeatability, calibration, tiers vs LiDAR, timing)"
 python scripts/benchmark.py --runs "$OUT/runs" --out "$OUT/benchmark" --tag reproduced
-python -m pytest -q tests/ || true
+ROOMPLAN_OUT="$OUT/runs" python -m pytest -q tests/ || true
 echo "done: $OUT/benchmark/benchmark_reproduced.json, $OUT/synth/synth_benchmark.json, $OUT/inject_room/inject_summary.json"

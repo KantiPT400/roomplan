@@ -1,0 +1,16 @@
+# Exact versions that produced the numbers in docs/benchmark/ (Python 3.13, Linux x86-64, CPU).
+#   pip install -r requirements-lock.txt
+# requirements.txt (minimum versions) is enough to run; this file is for bit-identical reproduction.
+# Why it matters: onnxruntime 1.30 instead of 1.29 changes the mono-depth output by ~2e-7 (relative). The LiDAR
+# tier does not use it; the photo tier's poses move by up to 6 mm / 0.5 deg and its room partition changes
+# (7 -> 5 rooms on the sample photo set). That sensitivity is a finding in itself: docs/report.md, section 5.
+numpy==2.5.3
+scipy==1.18.1
+opencv-python-headless==5.0.0.93
+pandas==3.0.5
+matplotlib==3.11.2
+onnxruntime==1.29.0
+pillow==12.3.0
+pillow-heif==1.8.0
+jsonschema==4.26.0
+pytest==9.1.1
