@@ -88,7 +88,18 @@ def choose_rotation(img_dir, names, n_probe=8):
     return max(score, key=score.get), {k: round(v, 2) for k, v in score.items()}
 
 
+def _reuse(out_dir):
+    """--reuse: geometry only, on the pseudo-LiDAR folder a previous run of this capture already wrote."""
+    import json as _j
+    p = os.path.join(out_dir, "work", "pseudo")
+    return p if os.environ.get("ROOMPLAN_REUSE") and os.path.exists(os.path.join(p, "meta.json")) else None
+
+
 def run(capture, out_dir, fps=FPS, log=print):
+    if _reuse(out_dir):
+        plan, dbg = run_geometry(_reuse(out_dir), stride=1, drift="on")
+        plan["meta"]["reused_registration"] = True
+        return plan, dbg
     work = os.path.join(out_dir, "work")
     raw = os.path.join(work, "frames")
     names = extract_frames(find_video(capture), raw, fps)

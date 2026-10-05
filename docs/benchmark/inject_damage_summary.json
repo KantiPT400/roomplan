@@ -1,0 +1,69 @@
+{
+ "wall_plane": "z=3.548",
+ "frames_painted": 7,
+ "true_area_m2": 0.1135,
+ "true_bbox_u": [
+  0.46,
+  0.86
+ ],
+ "true_bbox_v": [
+  0.85,
+  1.35
+ ],
+ "true_crack": {
+  "length_m": 0.6,
+  "u": [
+   0.36,
+   0.96
+  ],
+  "v": 0.6000000000000001
+ },
+ "detections": [
+  {
+   "id": "dmg1",
+   "surface": "wall_z+3.55",
+   "class": "crack",
+   "extent_m2": {
+    "value": 0.0156,
+    "ci95": [
+     0.0003,
+     0.0309
+    ],
+    "sigma": 0.0078
+   },
+   "bbox_on_surface_m": [
+    0.36,
+    0.58,
+    0.96,
+    0.62
+   ],
+   "length_m": {
+    "value": 0.62,
+    "ci95": [
+     0.542,
+     0.698
+    ],
+    "sigma": 0.04
+   }
+  },
+  {
+   "id": "dmg2",
+   "surface": "wall_z+3.55",
+   "class": "stain_discoloration",
+   "extent_m2": {
+    "value": 0.1412,
+    "ci95": [
+     0.1105,
+     0.1719
+    ],
+    "sigma": 0.0156
+   },
+   "bbox_on_surface_m": [
+    0.48,
+    0.8,
+    0.98,
+    1.3
+   ]
+  }
+ ]
+}

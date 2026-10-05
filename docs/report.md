@@ -98,36 +98,48 @@ jitter, 0.5% dropouts, slow pose drift, 17 deg rotation; `docs/benchmark/synth_b
 | gate | result | intervals covering truth |
 |---|---|---|
 | rooms and adjacency | 6/6 correct (2 rooms, 1 door) | |
-| wall lengths (24) | **24/24 within 2 cm**, 15/24 within 1 cm, median 0.9 cm, max 1.9 cm | 100% |
+| wall lengths (24) | **24/24 within 2 cm**, 17/24 within 1 cm, median 0.8 cm, max 1.8 cm | 100% |
 | ceiling height (12 rooms) | **12/12 within 2 mm** (gate 1.5 cm) | 100% |
-| door width (6) | 4/6 within 2 cm, errors 0.8-2.3 cm, bias: undersized | 100% |
+| door width (6) | 6/6 detected, 5/6 within 2 cm, errors 0.8-2.2 cm, all undersized (bias) | 100% |
 
 **Repeatability, real data** (`with_ceiling` vs `floor_only`, LiDAR, same apartment; `benchmark_*.json`):
-matched wall planes agree to a median of 2.6 cm (the 1 cm / 0.5% gate passes on 17% of plane-to-plane spans and
-2/9 room walls). **The gate fails.** Two reasons, both visible in `docs/benchmark/`: (1) where both captures
+matched wall planes agree to a median of 2.7 cm (the 1 cm / 0.5% gate passes on 18% of plane-to-plane spans and
+1/8 room walls). **The gate fails.** Two reasons, both visible in `docs/benchmark/`: (1) where both captures
 measured the same surface, planes agree within ~1 cm (12 of 27 within 2.3 cm, median 0.5 cm), but some room
 edges land on a full-height furniture front in one capture and the wall in the other; (2) room partitioning is
 not yet stable between captures (two rooms merged in one capture and split in the other). Our intervals cover
-the cross-capture difference only 33-50% of the time: they are calibrated for measurement error (synthetic:
+the cross-capture difference only 25-50% of the time (it varies with how the rooms partition): they are calibrated for measurement error (synthetic:
 100%) but not for "which surface is the wall", which is the real-world error mode. **Ceiling**: only
-`with_ceiling` looked up; 9 of its rooms have measured ceilings (2.28-3.08 m, intervals +-2-3 cm). The
+`with_ceiling` looked up; 11 of its 12 rooms have measured ceilings (1.97-3.08 m; the 1.97 m one is flagged
+"below 2.1 m: may be a loft or storage platform, verify"; intervals +-2-3 cm). The
 cross-capture ceiling spread cannot be computed: `floor_only` never saw a ceiling and correctly reports
 `not_observed` rather than guessing.
 
 **Staged damage** (`scripts/inject_damage.py`): a soft yellow-brown stain (0.114 m^2) and a 0.60 m hairline
 crack painted onto a measured wall in every frame using the capture's own depth and poses. Detected on the right
-wall with the right classes: crack 0.62 m [0.54, 0.70]; stain 0.145 m^2 [0.115, 0.175] (overestimate, truth
-just outside the interval). On the unmodified captures the detector reports 0 regions (26 before its precision
-gates).
+wall with the right classes: crack 0.62 m [0.54, 0.70] (truth 0.60); stain 0.141 m^2 [0.111, 0.172] (truth
+0.114, inside; the detector overestimates). On the unmodified `single_room` and `floor_only` captures it reports
+0 regions and 0 flags (it reported 26 regions before its precision gates; `with_ceiling`'s video was not
+available to us, so damage was not run on it).
 
-**Photo and video tiers vs LiDAR**: see section 6 and `docs/benchmark/benchmark_*.json`. On the sample data
-both tiers produce a plan in the output contract with wide, honest intervals, but neither passes its gate:
-the photo set had to be cut from a LiDAR walkthrough (no photo folders were supplied), and white walls give the
-video tier too few reliable registrations. We report this rather than tune to it.
+**Photo and video tiers vs LiDAR** (same capture; `benchmark_final.json`, plans in `docs/benchmark/`):
+
+| | photo (55 photos, 7 room folders, floor_only) | video (single_room clip, 37 s) |
+|---|---|---|
+| footprint vs LiDAR | **0.958** (gate +-8%: passes) | 0.58 |
+| rooms (LiDAR has) / matched | 7 (11) / 2 | 4 (3) / 1 |
+| images in the mapped component | 43 / 55 | 47 / 223 frames |
+| wall intervals | +-0.20-0.30 m (scale prior + unsupported ends) | +-0.21-0.30 m |
+
+Neither passes its full gate: room structure and adjacency are not yet right. The photo set had to be cut from a
+LiDAR walkthrough (no photo folders were supplied) and the clip turns faster than our video protocol allows
+(p99 137 deg/s), so registration breaks into separate stretches; only the largest is mapped, and the output says
+how much of the input it used. The footprint intervals are wide on purpose: "confident garbage" is the failure
+we designed against.
 
 **Head-to-head vs a consumer app: not done.** It needs a LiDAR iPhone in the benchmark rooms; we had neither.
-**Timing** (2-core VM, CPU): LiDAR 10 s (single room) to 60-75 s (215 s walk, 100 m); photo tier 6-11 min
-for 55 photos; video tier ~10 min for a 37 s clip.
+**Timing** (2-core VM, CPU): LiDAR 15 s (single room) to 55-65 s (115-215 s walks, with damage frames);
+photo tier ~11 min for 55 photos; video tier ~14 min for a 37 s clip at 6 fps (mono depth dominates).
 
 ## 6. The fix loop (full story in docs/fix_loop_declaration.md and fix_loop_result.md)
 Worst gate: photo-tier stitch (footprint 0.54x LiDAR, 0/8 rooms). Hypothesis, with evidence from scoring every

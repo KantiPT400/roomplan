@@ -49,3 +49,12 @@ footprint ratio did not move (0.52, predicted 0.80-1.20).
 3. **The photo set itself.** It is cut from a walkthrough shot for LiDAR, not from photos shot for overlap, so
    few photo pairs truly overlap. A protocol-following capture (docs/capture_protocol.md, section C) should
    do better, but we have no such capture to prove it.
+
+## After the fix loop (separate commits, not part of the scored before/after)
+Working on the second cause named in the post-mortem (walls and free space from mono depth), on the same photo
+set and scorer: 8 cm wall cells and a 12 cm face band for mono-depth tiers, and rooms segmented on free space
+seen by >= 2 photos then grown up to 1 m into space seen once. Final photo-tier numbers (`benchmark_final.json`):
+**footprint 0.958 x LiDAR (inside +-8%)**, 7 rooms (LiDAR 11), 2 matched; adjacency still not right, so the
+stitch gate as a whole still fails. Hub suppression (dropping a photo whose edges mostly disagree with the
+solution) found the hub correctly (`IMG_01196`) but would have split the graph 43 -> 5 photos, so it is guarded
+and was not applied on this set.

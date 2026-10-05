@@ -22,17 +22,20 @@ capture. Neither is accuracy against a tape; see docs/report.md section "Error b
 | wall position, same surface, capture vs capture | ~1 cm (12 of 27 matched planes within 2.3 cm, median 0.5 cm) | n/a | n/a |
 | wall position, all matched planes, capture vs capture | median 2.7 cm | n/a | n/a |
 | drift on a 100 m, 215 s walk (loop residual, on / off) | 0.0 cm / 11.6 cm | | |
-| reported 95% interval, wall length | +-2-4 cm (measured ends), +-20 cm (end bounded by furniture) | +-10-15% | +-10-20% |
+| reported 95% interval, wall length | +-2-4 cm (measured ends), +-20 cm (end bounded by furniture) | +-0.21-0.30 m | +-0.20-0.30 m |
 | ceiling height | measured where the capture looked up (coverage reported per room); "not observed" otherwise | wide (+-10%) | wide (+-10%) |
 | expected scale error before any other error | ~0.5% | 5% (1 sigma) from the height prior | 5% (1 sigma) from the height prior |
-| stitched whole-property plan | yes | see report | see report |
+| synthetic ground truth (exact) | walls 24/24 within 2 cm (median 0.8 cm), ceilings within 2 mm, doors 5/6 within 2 cm | not measured | not measured |
+| footprint vs LiDAR, same capture | reference | 0.58 (partial clip) | 0.96 |
+| stitched whole-property plan | yes | partial (largest registered stretch) | yes, rooms under-segmented (7 vs 11) |
 
-Video and photo rows are filled from the latest benchmark in docs/report.md.
 
 ## Runtime (2-core cloud VM, CPU)
 
 | capture | tier | runtime |
 |---|---|---|
-| single_room (37 s, 4 rooms) | LiDAR | ~10-15 s |
-| single_scan_floor_only (115 s) | LiDAR | ~30-180 s (with damage frames) |
-| single_scan_with_ceiling (215 s, 100 m walk) | LiDAR | ~45-75 s |
+| single_room (37 s) | LiDAR | 16 s (with damage) |
+| single_scan_floor_only (115 s) | LiDAR | 55 s (with damage) |
+| single_scan_with_ceiling (215 s, 100 m walk) | LiDAR | 64 s |
+| floor_only photo folders (55 photos) | photo | ~7-11 min |
+| single_room clip (37 s, 6 fps) | video | ~14 min |

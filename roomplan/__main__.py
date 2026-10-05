@@ -37,8 +37,12 @@ def main(argv=None):
     ap.add_argument("--drift", default="on", choices=["on", "off"])
     ap.add_argument("--stride", type=int, default=10, help="use every Nth depth frame (lidar)")
     ap.add_argument("--no-damage", action="store_true")
+    ap.add_argument("--reuse", action="store_true",
+                    help="video/photo: reuse the registration of a previous run (geometry only)")
     a = ap.parse_args(argv)
     tier = detect_tier(a.capture) if a.tier == "auto" else a.tier
+    if a.reuse:
+        os.environ["ROOMPLAN_REUSE"] = "1"
     name = os.path.basename(os.path.normpath(a.capture))
     out = os.path.join(a.out, f"{name}_{tier}" + ("" if a.drift == "on" else "_driftoff"))
     os.makedirs(out, exist_ok=True)

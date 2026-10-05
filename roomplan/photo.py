@@ -112,8 +112,19 @@ def _register(a, b, kps, des, K, depth, min_inl=25):
             "pts_b": pb[ok][inl], "zb_pred": Xb[:, 2]}
 
 
+def _reuse(out_dir):
+    """--reuse: geometry only, on the pseudo-LiDAR folder a previous run of this capture already wrote."""
+    import json as _j
+    p = os.path.join(out_dir, "work", "pseudo")
+    return p if os.environ.get("ROOMPLAN_REUSE") and os.path.exists(os.path.join(p, "meta.json")) else None
+
+
 def run(capture, out_dir, prior=CAM_HEIGHT_PRIOR, log=print):
     from .mvreg import View, layout, write_pseudo
+    if _reuse(out_dir):
+        plan, dbg = run_geometry(_reuse(out_dir), stride=1, drift="off")
+        plan["meta"]["reused_registration"] = True
+        return plan, dbg
     work = os.path.join(out_dir, "work")
     img_dir = os.path.join(work, "images")
     items = collect(capture, img_dir)

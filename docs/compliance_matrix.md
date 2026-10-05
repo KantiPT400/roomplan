@@ -38,11 +38,11 @@ Status: **done** = implemented and evidenced; **partial** = implemented, evidenc
 ## Gates
 | Gate | Evidence | Status |
 |---|---|---|
-| Opening widths <= 2 cm on >= 85%, detection scored | synthetic: 6/6 doors found, 4/6 within 2 cm (0.8-2.3 cm) | fail on synthetic (67% < 85%); not measurable on real data |
+| Opening widths <= 2 cm on >= 85%, detection scored | synthetic: 6/6 doors found, 5/6 within 2 cm (0.8-2.2 cm) | fail on synthetic (83% < 85%); not measurable on real data |
 | Ceiling <= 1.5 cm; spread across captures <= 1 cm | synthetic 12/12 within 2 mm; real spread not computable (one capture saw ceilings) | pass on synthetic; real spread not evaluable |
-| Repeatability within 1 cm or 0.5% per wall | real, same apartment twice: 2/9 walls, 17% of plane spans | **fail** (cause: surface identity + room partition, report section 5) |
+| Repeatability within 1 cm or 0.5% per wall | real, same apartment twice: 1/8 walls, 18% of plane spans (planes median 2.7 cm) | **fail** (cause: surface identity + room partition, report section 5) |
 | Drift accountability + on/off ablation | scripts/drift_ablation.py, docs/benchmark/drift_ablation.png | done (loop residual 11.4 -> 2.1 cm) |
-| Photo-tier whole-property stitch, +-8% footprint | fix loop, docs/fix_loop_result.md | **fail** |
+| Photo-tier whole-property stitch, +-8% footprint | fix loop + follow-up, docs/fix_loop_result.md | **partial**: footprint 0.958 (passes +-8%), rooms 7 vs 11, adjacency not right |
 | Photo +-8% / video +-3% wall lengths; calibration every tier | benchmark.py reference vs LiDAR | fail / not evaluable on sample (too few matched walls) |
 
 ## Parts 3-5 and deliverables
