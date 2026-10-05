@@ -50,6 +50,11 @@ for sd in a.seeds:
             rec[f"{name}_dim{k}_err"] = round(L["value"] - t, 4)
             rec[f"{name}_dim{k}_in_ci"] = bool(L["ci95"][0] <= t <= L["ci95"][1])
             rec[f"{name}_dim{k}_halfwidth"] = round((L["ci95"][1] - L["ci95"][0]) / 2, 4)
+        if "dimensions_m" in r:                     # wall-to-wall (laser-measure equivalent)
+            dd = sorted([r["dimensions_m"]["along_x"], r["dimensions_m"]["along_z"]], key=lambda m: m["value"])
+            for k, (m, t) in enumerate(zip(dd, truth)):
+                rec[f"{name}_ww{k}_err"] = round(m["value"] - t, 4)
+                rec[f"{name}_ww{k}_in_ci"] = bool(m["ci95"][0] <= t <= m["ci95"][1])
         H = r["ceiling_height_m"]
         if H["value"] is not None:
             rec[f"{name}_ceil_err"] = round(H["value"] - gt["rooms"][name]["ceiling_m"], 4)
@@ -73,6 +78,11 @@ summary["walls"] = {"n": len(errs), "median_abs_err_m": float(np.median(errs)) i
                     "max_abs_err_m": float(errs.max()) if len(errs) else None,
                     "within_1cm": int((errs <= 0.01).sum()), "within_2cm": int((errs <= 0.02).sum()),
                     "ci95_coverage": float(np.mean(inci)) if inci else None}
+ww = np.array([abs(x) for x in coll("A_ww", "_err") + coll("B_ww", "_err")])
+summary["wall_to_wall"] = {"n": len(ww), "median_abs_err_m": float(np.median(ww)) if len(ww) else None,
+                           "max_abs_err_m": float(ww.max()) if len(ww) else None,
+                           "within_1cm": int((ww <= 0.01).sum()), "within_2cm": int((ww <= 0.02).sum()),
+                           "ci95_coverage": float(np.mean(coll("A_ww", "_in_ci") + coll("B_ww", "_in_ci"))) if len(ww) else None}
 ce = np.array([abs(x) for x in coll("A_ceil", "_err") + coll("B_ceil", "_err")])
 summary["ceiling"] = {"n": len(ce), "max_abs_err_m": float(ce.max()) if len(ce) else None,
                       "within_1.5cm": int((ce <= 0.015).sum()),

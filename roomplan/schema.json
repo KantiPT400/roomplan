@@ -40,7 +40,9 @@
             "ends_measured": {"type": "boolean", "description": "both terminating walls are fitted planes"}
           }}},
         "floor_area_m2": {"$ref": "#/$defs/measure"},
+        "dimensions_m": {"type": "object", "description": "wall-to-wall extent along each plan axis (laser-measure equivalent)"},
         "perimeter_m": {"type": "number"},
+        "status": {"type": "string"},
         "ceiling_height_m": {"$ref": "#/$defs/measure"}
       }}},
     "openings": {"type": "array", "items": {

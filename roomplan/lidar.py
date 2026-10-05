@@ -130,7 +130,21 @@ def run(root, stride=10, voxel=0.015, drift_sigma_per_m=0.0, frames=None, theta=
         per = sum(w["length_m"]["value"] for w in wall_out)
         # area sigma: each edge shifting by its own sigma changes area by ~ sigma * length of that edge
         sA = float(np.sqrt(sum((w["length_m"]["sigma"] * w["length_m"]["value"] / 2) ** 2 for w in wall_out)))
+        # wall-to-wall dimensions (what a laser measure gives): extent of the polygon along each Manhattan axis,
+        # between the two outermost edges; sigma from the planes that bound those edges
+        dims = {}
+        for k, axn in ((0, "x"), (1, "z")):
+            lo_e = [e for e in edges if e[0] == axn and abs(e[1] - V[:, k].min()) < 1e-6]
+            hi_e = [e for e in edges if e[0] == axn and abs(e[1] - V[:, k].max()) < 1e-6]
+            span = float(V[:, k].max() - V[:, k].min())
+            sa = lo_e[0][2].se if lo_e and lo_e[0][2] is not None else None
+            sb = hi_e[0][2].se if hi_e and hi_e[0][2] is not None else None
+            sd = length_sigma(span, sa or 0.0, sb or 0.0, tier, drift_sigma_per_m * span,
+                              sa is not None and sb is not None, scale_rel)
+            dims[f"along_{axn}"] = ci(span, sd)
+            dims[f"along_{axn}"]["ends_measured"] = sa is not None and sb is not None
         room = {"id": f"room{rid}", "polygon_m": np.round(V, 3).tolist(), "walls": wall_out,
+                "dimensions_m": dims,
                 "floor_area_m2": ci(A, sA, 2), "perimeter_m": round(per, 2)}
         if "ceiling" in hts and hts["ceiling"][3] >= 0.15:
             cy, cse, cn, cov = hts["ceiling"]
