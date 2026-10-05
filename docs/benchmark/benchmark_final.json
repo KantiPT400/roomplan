@@ -1018,13 +1018,22 @@
    "ref_inside_tier_ci95": null,
    "alignment_score": 0.238,
    "meta": {
-    "photos_total": null,
-    "photos_placed": null,
-    "room_folders_stitched": null,
-    "room_folders_unstitched": null,
+    "photos_total": 55,
+    "photos_placed": 40,
+    "room_folders_stitched": [
+     "Room_1",
+     "Room_2",
+     "Room_3",
+     "Room_4",
+     "Room_6",
+     "Room_7",
+     "Room_8"
+    ],
+    "room_folders_unstitched": [],
+    "room_folders_not_in_rooms": [],
     "sfm_fragments": null,
     "frames_registered": null,
-    "runtime_s": 4.4
+    "runtime_s": 399.8
    }
   },
   "room_video_video": {
@@ -1043,6 +1052,7 @@
     "photos_placed": null,
     "room_folders_stitched": null,
     "room_folders_unstitched": null,
+    "room_folders_not_in_rooms": null,
     "sfm_fragments": null,
     "frames_registered": null,
     "runtime_s": 3.8
@@ -1050,7 +1060,7 @@
   }
  },
  "timing_s": {
-  "floor_only_photos_photo": 4.4,
+  "floor_only_photos_photo": 399.8,
   "room_video_video": 3.8,
   "with_ceiling_lidar_driftoff": 50.4,
   "c00a170fe1_lidar": 5.3,

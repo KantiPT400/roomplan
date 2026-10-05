@@ -299,7 +299,11 @@
     "status": "not_observed",
     "note": "capture did not see the ceiling over this room; prior range only"
    },
-   "name": "Room 1"
+   "photo_folders": {
+    "Room_6": 1
+   },
+   "name": "Room_6",
+   "stitched": true
   },
   {
    "id": "room2",
@@ -596,7 +600,11 @@
     "status": "not_observed",
     "note": "capture did not see the ceiling over this room; prior range only"
    },
-   "name": "Room 2"
+   "photo_folders": {
+    "Room_4": 1
+   },
+   "name": "Room_4",
+   "stitched": true
   },
   {
    "id": "room3",
@@ -1143,7 +1151,17 @@
     "status": "not_observed",
     "note": "capture did not see the ceiling over this room; prior range only"
    },
-   "name": "Room 3"
+   "photo_folders": {
+    "Room_1": 6,
+    "Room_2": 5,
+    "Room_3": 5,
+    "Room_4": 4,
+    "Room_6": 6,
+    "Room_7": 2,
+    "Room_8": 4
+   },
+   "name": "Room_1",
+   "stitched": true
   },
   {
    "id": "room4",
@@ -1540,7 +1558,8 @@
     "status": "not_observed",
     "note": "capture did not see the ceiling over this room; prior range only"
    },
-   "name": "Room 4"
+   "name": "unlabelled 1",
+   "stitched": false
   },
   {
    "id": "room5",
@@ -2087,7 +2106,8 @@
     "status": "not_observed",
     "note": "capture did not see the ceiling over this room; prior range only"
    },
-   "name": "Room 5"
+   "name": "unlabelled 2",
+   "stitched": false
   },
   {
    "id": "room6",
@@ -2434,7 +2454,8 @@
     "status": "not_observed",
     "note": "capture did not see the ceiling over this room; prior range only"
    },
-   "name": "Room 6"
+   "name": "unlabelled 3",
+   "stitched": false
   },
   {
    "id": "room7",
@@ -2631,7 +2652,11 @@
     "status": "not_observed",
     "note": "capture did not see the ceiling over this room; prior range only"
    },
-   "name": "Room 7"
+   "photo_folders": {
+    "Room_1": 1
+   },
+   "name": "Room_1 (2)",
+   "stitched": true
   }
  ],
  "openings": [
@@ -4257,8 +4282,52 @@
   "floor_y": -1.3999,
   "global_ceiling": null,
   "n_walls": 32,
-  "reused_registration": true,
+  "photos_total": 55,
+  "photos_placed": 40,
+  "room_folders_stitched": [
+   "Room_1",
+   "Room_2",
+   "Room_3",
+   "Room_4",
+   "Room_6",
+   "Room_7",
+   "Room_8"
+  ],
+  "room_folders_unstitched": [],
+  "room_folders_in_rooms": [
+   "Room_1",
+   "Room_2",
+   "Room_3",
+   "Room_4",
+   "Room_6",
+   "Room_7",
+   "Room_8"
+  ],
+  "room_folders_not_in_rooms": [],
+  "photos_self_calibrated": 39,
+  "registered_pairs": 109,
+  "components": [
+   43,
+   2
+  ],
+  "unregistered_photos": [
+   "Room_1__IMG_01256.jpg",
+   "Room_4__IMG_04114.jpg",
+   "Room_4__IMG_04454.jpg",
+   "Room_4__IMG_04586.jpg",
+   "Room_6__IMG_01636.jpg",
+   "Room_6__IMG_01876.jpg",
+   "Room_6__IMG_01948.jpg",
+   "Room_7__IMG_03100.jpg",
+   "Room_7__IMG_03213.jpg",
+   "Room_7__IMG_03266.jpg",
+   "Room_7__IMG_03361.jpg",
+   "Room_7__IMG_03492.jpg",
+   "Room_7__IMG_03523.jpg",
+   "Room_8__IMG_02609.jpg",
+   "Room_8__IMG_02681.jpg"
+  ],
   "total_floor_area_m2": 63.13,
-  "runtime_s": 4.4
+  "runtime_s": 399.8
  }
 }

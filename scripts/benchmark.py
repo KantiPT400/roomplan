@@ -21,7 +21,7 @@ import sys
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from roomplan.evaluate import compare, align, transform, match_rooms
+from roomplan.evaluate import compare, align, transform
 
 
 def load(p):
@@ -207,7 +207,7 @@ def main():
                 res["reference"][tier_run] = reference(R, T)
                 res["reference"][tier_run]["meta"] = {k: T["meta"].get(k) for k in
                                                       ("photos_total", "photos_placed", "room_folders_stitched",
-                                                       "room_folders_unstitched", "sfm_fragments",
+                                                       "room_folders_unstitched", "room_folders_not_in_rooms", "sfm_fragments",
                                                        "frames_registered", "runtime_s")}
             except Exception as e:                       # a tier output too broken to even align
                 res["reference"][tier_run] = {"error": repr(e)}
