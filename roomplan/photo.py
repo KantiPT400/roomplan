@@ -1,32 +1,44 @@
 """Photo tier: one folder of 2-8 stills per room (no depth, no poses) -> one stitched plan.
 
-All photos from all folders go into a single exhaustive-matching SfM. Rooms are tied together by the
-doorway photos the capture protocol asks for (docs/capture_protocol.md, step 4): each room's folder holds a
-shot taken from the doorway looking back into the room just left, which shares features with that room.
-Registered photos become pseudo-LiDAR frames (pseudo.py) and the same geometry runs on them.
-Room names come from folder names: each segmented room takes the name of the folder whose cameras sit
-inside it. Photos that do not register are reported, never silently dropped; a folder with no registered
-photo is reported as an unplaced room.
+SfM (pycolmap) registered 9 of 45 protocol-style photos on the sample apartment (white walls, few
+features), so this tier does not depend on triangulation:
+
+1. Per photo: mono disparity -> metric, gravity-aligned depth from that photo alone (singleview.py:
+   planarity fixes the disparity shift, the floor gives gravity, the camera-height prior gives scale).
+   Photos that show too little floor stay uncalibrated for now.
+2. Pairwise registration: SIFT matches between every pair of photos, verified by PnP-RANSAC that uses
+   the metric depth of one photo and the 2D keypoints of the other. This needs ~25 good matches, not a
+   triangulated track, and works across folders through the protocol's doorway shots.
+3. Layout: maximum spanning tree over registration inliers; poses composed from the best-calibrated
+   photo. Each camera keeps its own gravity when it has one; uncalibrated photos inherit gravity and
+   depth scale from the neighbour they registered to.
+4. The registered photos are written as a pseudo-LiDAR folder and the shared geometry runs on it.
+   Components that never connect are reported as unplaced, never silently overlapped.
 """
 from __future__ import annotations
-import os
 import json
+import os
 import numpy as np
+import cv2
+import pandas as pd
 from PIL import Image, ImageOps
-from .sfm import run_sfm
-from . import pseudo
+from scipy.spatial.transform import Rotation
+from .mono import disparity
+from .singleview import calibrate, depth_from
+from .pseudo import CAM_HEIGHT_PRIOR
 from .lidar import run as run_geometry
 
 EXTS = (".jpg", ".jpeg", ".png", ".heic", ".heif")
-WIDTH = 960
+WIDTH = 960          # long side is scaled so the SHORT side is 960 px? no: width (x) is 960 px
+DS = 4               # disparity/depth stored at 1/4 resolution
+DIAG_35 = 43.27      # mm, diagonal of the 36x24 frame that "35 mm equivalent" focal lengths refer to
 
 
-def _focal_35(img):
+def _f35(im):
     try:
-        ex = img.getexif()
-        sub = ex.get_ifd(0x8769)
-        f35 = sub.get(0xA405) or ex.get(0xA405)
-        return float(f35) if f35 else None
+        ex = im.getexif()
+        v = ex.get_ifd(0x8769).get(0xA405) or ex.get(0xA405)
+        return float(v) if v else None
     except Exception:
         return None
 
@@ -38,61 +50,101 @@ def collect(capture, img_dir):
     except ImportError:
         pass
     os.makedirs(img_dir, exist_ok=True)
-    rooms, f35s = {}, []
+    items = []
     for room in sorted(d for d in os.listdir(capture) if os.path.isdir(os.path.join(capture, d))):
-        files = sorted(f for f in os.listdir(os.path.join(capture, room)) if f.lower().endswith(EXTS))
-        for f in files:
+        for f in sorted(os.listdir(os.path.join(capture, room))):
+            if not f.lower().endswith(EXTS):
+                continue
             src = os.path.join(capture, room, f)
             name = f"{room}__{os.path.splitext(f)[0]}.jpg"
             dst = os.path.join(img_dir, name)
             im = Image.open(src)
-            f35 = _focal_35(im)
-            if f35:
-                f35s.append(f35)
+            f35 = _f35(im)
+            im = ImageOps.exif_transpose(im).convert("RGB")
+            h = int(round(im.height * WIDTH / im.width))
             if not os.path.exists(dst):
-                im = ImageOps.exif_transpose(im).convert("RGB")
-                h = int(round(im.height * WIDTH / im.width))
                 im.resize((WIDTH, h), Image.LANCZOS).save(dst, quality=92)
-            rooms.setdefault(room, []).append(name)
-    return rooms, (float(np.median(f35s)) if f35s else None)
+            items.append({"room": room, "name": name, "w": WIDTH, "h": h, "f35": f35})
+    return items
 
 
-def run(capture, out_dir):
+def _K(it, default_f35=26.0 * 1.1):
+    # 35 mm-equivalent focal length refers to the frame diagonal; iPhone main camera ~26 mm.
+    f35 = it["f35"] or default_f35
+    fpx = f35 / DIAG_35 * np.hypot(it["w"], it["h"])
+    return np.array([[fpx, 0, it["w"] / 2], [0, fpx, it["h"] / 2], [0, 0, 1.0]])
+
+
+def _register(a, b, kps, des, K, depth, min_inl=25):
+    """Pose of camera b relative to camera a (X_b = R X_a + t, metres in a's depth scale)."""
+    if des[a] is None or des[b] is None:
+        return None
+    m = cv2.BFMatcher(cv2.NORM_L2).knnMatch(des[a], des[b], k=2)
+    good = [x[0] for x in m if len(x) == 2 and x[0].distance < 0.78 * x[1].distance]
+    if len(good) < min_inl:
+        return None
+    pa = np.float32([kps[a][g.queryIdx].pt for g in good])
+    pb = np.float32([kps[b][g.trainIdx].pt for g in good])
+    z = depth[a]
+    if z is None:
+        return None
+    u = np.clip((pa[:, 0] / DS).astype(int), 0, z.shape[1] - 1)
+    v = np.clip((pa[:, 1] / DS).astype(int), 0, z.shape[0] - 1)
+    zz = z[v, u]
+    Ka = K[a]
+    X = np.stack([(pa[:, 0] - Ka[0, 2]) / Ka[0, 0] * zz, (pa[:, 1] - Ka[1, 2]) / Ka[1, 1] * zz, zz], 1)
+    ok = (zz > 0.2) & (zz < 8)
+    if ok.sum() < min_inl:
+        return None
+    r = cv2.solvePnPRansac(X[ok].astype(np.float64), pb[ok].astype(np.float64), K[b], None,
+                           iterationsCount=1000, reprojectionError=6.0, confidence=0.999,
+                           flags=cv2.SOLVEPNP_EPNP)
+    if not r[0] or r[3] is None or len(r[3]) < min_inl:
+        return None
+    inl = r[3][:, 0]
+    rv, tv = cv2.solvePnPRefineLM(X[ok][inl], pb[ok][inl].astype(np.float64), K[b], None, r[1], r[2])
+    R, _ = cv2.Rodrigues(rv)
+    if not np.all(np.isfinite(tv)) or np.linalg.norm(tv) > 6.0:
+        return None
+    # depth-scale ratio: b's own depth at the inliers vs depth predicted from a's points
+    Xb = X[ok][inl] @ R.T + tv[:, 0]
+    return {"R": R, "t": tv[:, 0], "inliers": int(len(inl)), "ratio": float(len(inl) / ok.sum()),
+            "pts_b": pb[ok][inl], "zb_pred": Xb[:, 2]}
+
+
+def run(capture, out_dir, prior=CAM_HEIGHT_PRIOR, log=print):
+    from .mvreg import View, layout, write_pseudo
     work = os.path.join(out_dir, "work")
-    img = os.path.join(work, "images")
-    rooms, f35 = collect(capture, img)
-    # focal from EXIF 35 mm-equivalent focal length when present (36 mm sensor width equivalent)
-    focal = WIDTH * (f35 / 36.0) if f35 else 0.72 * WIDTH
-    frags = run_sfm(img, os.path.join(work, "sfm"), focal_px=focal, sequential=False, min_model=2)
+    img_dir = os.path.join(work, "images")
+    items = collect(capture, img_dir)
+    cache = os.path.join(work, "disp_cache")
+    os.makedirs(cache, exist_ok=True)
+    views = [View(it["name"], cv2.imread(os.path.join(img_dir, it["name"])), _K(it), it["room"], cache)
+             for it in items]
+    n = len(views)
+    log(f"photos {n}, self-calibrated {sum(v.cal is not None for v in views)}")
+    pairs = [(a, b) for a in range(n) for b in range(n) if a != b]
+    C, c, comp_of, comps, edges = layout(views, pairs, log)
     pdir = os.path.join(work, "pseudo")
-    logf = open(os.path.join(work, "pseudo.log"), "w")
-    # photos have no time order: fragments are placed by continuity of nothing, so only the largest
-    # fragment is mapped; the others are reported as unplaced (see report: failure modes)
-    frags.sort(key=lambda f: -len(f.names))
-    main = frags[:1]
-    meta = pseudo.build(main, img, pdir, os.path.join(work, "depth_cache"), "photo", fps=None,
-                        log=lambda m: (print(m), logf.write(m + "\n")))
+    df, meta = write_pseudo(views, C, c, comp_of, pdir, "photo", prior=prior)
     plan, dbg = run_geometry(pdir, stride=1, drift="off")
-    # name rooms from folders
-    import pandas as pd
     from matplotlib.path import Path
-    od = pd.read_csv(os.path.join(pdir, "odometry.csv"))
-    cam = od[["x", "z"]].to_numpy() @ dbg["R2"].T
-    folder = od["image"].str.split("__").str[0].to_numpy()
-    used = set()
+    cam = df[["x", "z"]].to_numpy() @ dbg["R2"].T
     for r in plan["rooms"]:
         inside = Path(np.array(r["polygon_m"])).contains_points(cam)
         if inside.any():
-            vals, cnt = np.unique(folder[inside], return_counts=True)
+            vals, cnt = np.unique(df["group"].to_numpy()[inside], return_counts=True)
             r["name"] = str(vals[np.argmax(cnt)])
-            r["photo_folders"] = {str(v): int(c) for v, c in zip(vals, cnt)}
-            used.add(r["name"])
-    registered = set(od["image"])
-    plan["meta"]["photos_total"] = sum(len(v) for v in rooms.values())
-    plan["meta"]["photos_registered"] = len(registered)
-    plan["meta"]["unregistered_photos"] = sorted(set(sum(rooms.values(), [])) - registered)
-    plan["meta"]["unplaced_room_folders"] = sorted(r for r, fs in rooms.items()
-                                                  if not any(f in registered for f in fs))
-    plan["meta"]["sfm_fragments"] = len(frags)
-    plan["meta"]["focal_35mm"] = f35
+            r["photo_folders"] = {str(v): int(k) for v, k in zip(vals, cnt)}
+        r["stitched"] = bool(inside.any() and df["main_component"].to_numpy()[inside].mean() > 0.5)
+    folders = sorted(set(it["room"] for it in items))
+    main_f = sorted(set(df.loc[df["main_component"] == 1, "group"]))
+    plan["meta"].update({
+        "photos_total": n, "photos_self_calibrated": int(sum(v.cal is not None for v in views)),
+        "photos_placed": int(len(df)), "registered_pairs": len(edges),
+        "components": [len(cc) for cc in comps if len(cc) > 1],
+        "unregistered_photos": sorted(set(v.name for v in views) - set(df["image"])),
+        "room_folders_stitched": main_f,
+        "room_folders_unstitched": sorted(set(folders) - set(main_f)),
+    })
     return plan, dbg

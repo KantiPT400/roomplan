@@ -21,7 +21,8 @@ def fuse(scan: Scan, stride=10, min_d=0.3, max_d=4.5, step=3, voxel=0.02, frames
     ids = frames if frames is not None else depth_frame_ids(scan, stride)
     pts, fid = [], []
     for f in ids:
-        P, _ = backproject(read_depth(scan, f), K, min_d, max_d, step)
+        d = read_depth(scan, f)
+        P, _ = backproject(d, scan.K_depth_for(f, d.shape), min_d, max_d, step)
         R, t = scan.pose(f)
         pts.append(P @ R.T + t)
         fid.append(np.full(len(P), f))

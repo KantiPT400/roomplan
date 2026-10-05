@@ -30,6 +30,15 @@ class Scan:
         K[:2] *= s
         return K
 
+    def K_depth_for(self, frame: int, depth_shape) -> np.ndarray:
+        """Per-frame intrinsics for pseudo-LiDAR folders that set per_frame_intrinsics (odometry fx..cy are in
+        units of a 1920-px-wide RGB image of the same orientation); global K otherwise."""
+        if not getattr(self, "per_frame", False):
+            return self.K_depth
+        r = self.poses.loc[self.poses["frame"] == frame].iloc[0]
+        s = depth_shape[1] / 1920.0
+        return np.array([[r.fx * s, 0, r.cx * s], [0, r.fy * s, r.cy * s], [0, 0, 1.0]])
+
     def pose(self, frame: int):
         r = self.poses.loc[self.poses["frame"] == frame].iloc[0]
         R = Rotation.from_quat([r.qx, r.qy, r.qz, r.qw]).as_matrix()
@@ -53,7 +62,9 @@ def load_scan(root: str, rgb_size=(1920, 1440), depth_size=(256, 192)) -> Scan:
     poses = _read_csv(os.path.join(root, "odometry.csv"))
     poses["frame"] = poses["frame"].astype(int)
     K = np.loadtxt(os.path.join(root, "camera_matrix.csv"), delimiter=",")
-    return Scan(root, poses, K, depth_size, rgb_size)
+    sc = Scan(root, poses, K, depth_size, rgb_size)
+    sc.per_frame = bool(meta.get("per_frame_intrinsics", False))
+    return sc
 
 
 def depth_frame_ids(scan: Scan, stride: int = 10) -> list[int]:

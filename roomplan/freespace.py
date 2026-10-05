@@ -25,7 +25,8 @@ class Grid:
 
 
 def wall_hits(scan: Scan, frame: int, floor_y: float, band=(-0.05, 3.5), max_d=4.5, step=2):
-    P, _ = backproject(read_depth(scan, frame), scan.K_depth, 0.3, max_d, step)
+    d = read_depth(scan, frame)
+    P, _ = backproject(d, scan.K_depth_for(frame, d.shape), 0.3, max_d, step)
     R, t = scan.pose(frame)
     W = P @ R.T + t
     sel = (W[:, 1] > floor_y + band[0]) & (W[:, 1] < floor_y + band[1])

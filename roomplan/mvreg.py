@@ -1,0 +1,230 @@
+"""Pairwise multi-view registration shared by the photo and video tiers.
+
+COLMAP's incremental SfM fragmented on the sample apartment (white walls, motion blur): 7-17 models per
+video, 9 of 45 photos registered. Checked against the LiDAR capture's true poses, two-view essential-matrix
+estimation is far more reliable on the same images: with >= 25 inliers the relative rotation is within
+~1 deg of truth (e.g. 18.81 vs 18.92, 20.16 vs 19.88, 8.64 vs 8.96 deg). So:
+
+  pair (a, b): SIFT + ratio test -> essential matrix (RANSAC) -> R, t direction. The translation length
+               comes from a's metric single-view depth: 1-D least squares on reprojection in b.
+               PnP on a's depth is the fallback when E has too few inliers.
+  graph      : photos -> all pairs; video -> each frame against the next few frames.
+  layout     : maximum spanning tree over inliers, then every camera keeps its own gravity (floor
+               normal) where it has one; uncalibrated views inherit depth scale from their tree parent.
+Output is a pseudo-LiDAR folder for the shared geometry; components that never connect are reported.
+"""
+from __future__ import annotations
+import json
+import os
+import numpy as np
+import cv2
+import pandas as pd
+from scipy.spatial.transform import Rotation
+from .mono import disparity
+from .singleview import calibrate, depth_from
+from .pseudo import CAM_HEIGHT_PRIOR
+
+DS = 4
+MIN_E_INL = 25
+
+
+class View:
+    def __init__(self, name, img, K, group, disp_cache):
+        self.name, self.K, self.group = name, K, group
+        self.h, self.w = img.shape[:2]
+        cp = os.path.join(disp_cache, name + ".npy")
+        if os.path.exists(cp):
+            self.disp = np.load(cp)
+        else:
+            d = disparity(img)
+            self.disp = cv2.resize(d, (self.w // DS, self.h // DS), interpolation=cv2.INTER_AREA)
+            np.save(cp, self.disp)
+        Ks = K.copy(); Ks[:2] /= DS
+        self.cal = calibrate(self.disp, Ks)
+        self.depth = depth_from(self.disp, self.cal) if self.cal else None
+        g = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        self.kp, self.des = SIFT.detectAndCompute(g, None)
+
+
+SIFT = cv2.SIFT_create(nfeatures=4000, contrastThreshold=0.02)
+
+
+def _depth_at(v: View, pts):
+    u = np.clip((pts[:, 0] / DS).astype(int), 0, v.depth.shape[1] - 1)
+    w = np.clip((pts[:, 1] / DS).astype(int), 0, v.depth.shape[0] - 1)
+    return v.depth[w, u]
+
+
+def register(a: View, b: View):
+    """Relative pose X_b = R X_a + t (metres, a's scale). None if unreliable."""
+    if a.des is None or b.des is None or len(a.kp) < 20 or len(b.kp) < 20:
+        return None
+    m = cv2.BFMatcher(cv2.NORM_L2).knnMatch(a.des, b.des, k=2)
+    good = [x[0] for x in m if len(x) == 2 and x[0].distance < 0.8 * x[1].distance]
+    if len(good) < MIN_E_INL:
+        return None
+    pa = np.float64([a.kp[g.queryIdx].pt for g in good])
+    pb = np.float64([b.kp[g.trainIdx].pt for g in good])
+    na = cv2.undistortPoints(pa.reshape(-1, 1, 2), a.K, None).reshape(-1, 2)
+    nb = cv2.undistortPoints(pb.reshape(-1, 1, 2), b.K, None).reshape(-1, 2)
+    E, mask = cv2.findEssentialMat(na, nb, np.eye(3), method=cv2.RANSAC, prob=0.999,
+                                   threshold=1.5 / a.K[0, 0])
+    res = None
+    if E is not None and E.shape == (3, 3):
+        n_inl, R, t, mask2 = cv2.recoverPose(E, na, nb, np.eye(3), mask=mask)
+        inl = mask2[:, 0] > 0
+        if n_inl >= MIN_E_INL and n_inl >= 0.3 * len(good):
+            t = t[:, 0]
+            s = 0.0
+            if a.depth is not None:
+                za = _depth_at(a, pa[inl])
+                ok = (za > 0.2) & (za < 8)
+                if ok.sum() >= 10:
+                    Xa = np.stack([na[inl][ok, 0] * za[ok], na[inl][ok, 1] * za[ok], za[ok]], 1)
+                    Y = Xa @ R.T
+                    # project (Y + s t) and match nb: linearised 1-D least squares in s, robustified
+                    obs = nb[inl][ok]
+                    ss = np.linspace(0, 3.0, 301)
+                    errs = []
+                    for sv in ss:
+                        Z = Y + sv * t
+                        pr = Z[:, :2] / np.maximum(Z[:, 2:3], 1e-3)
+                        errs.append(np.median(np.linalg.norm(pr - obs, axis=1)))
+                    s = float(ss[int(np.argmin(errs))])
+            res = {"R": R, "t": t * s, "inliers": int(n_inl), "method": "E", "scaled": a.depth is not None,
+                   "pa": pa[inl], "pb": pb[inl]}
+    if res is None and a.depth is not None:
+        za = _depth_at(a, pa)
+        ok = (za > 0.2) & (za < 8)
+        if ok.sum() >= MIN_E_INL:
+            X = np.stack([na[ok, 0] * za[ok], na[ok, 1] * za[ok], za[ok]], 1)
+            r = cv2.solvePnPRansac(X, pb[ok], b.K, None, iterationsCount=1000, reprojectionError=6.0,
+                                   flags=cv2.SOLVEPNP_EPNP)
+            if r[0] and r[3] is not None and len(r[3]) >= MIN_E_INL:
+                R, _ = cv2.Rodrigues(r[1])
+                t = r[2][:, 0]
+                if np.all(np.isfinite(t)) and np.linalg.norm(t) < 6:
+                    i = r[3][:, 0]
+                    res = {"R": R, "t": t, "inliers": int(len(i)), "method": "PnP", "scaled": True,
+                           "pa": pa[ok][i], "pb": pb[ok][i]}
+    if res is None:
+        return None
+    # gravity consistency between self-calibrated views
+    if a.cal is not None and b.cal is not None:
+        ua = a.cal["Rg"].T @ np.array([0, 1.0, 0]); ub = b.cal["Rg"].T @ np.array([0, 1.0, 0])
+        if np.degrees(np.arccos(np.clip((res["R"] @ ua) @ ub, -1, 1))) > 12:
+            return None
+    return res
+
+
+def layout(views, pairs, log=print):
+    edges = []
+    for a, b in pairs:
+        r = register(views[a], views[b])
+        if r is not None:
+            edges.append((a, b, r))
+    log(f"pairs tried {len(pairs)}, registered {len(edges)} "
+        f"(E {sum(e[2]['method'] == 'E' for e in edges)}, PnP {sum(e[2]['method'] == 'PnP' for e in edges)})")
+    n = len(views)
+    parent = list(range(n))
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]; x = parent[x]
+        return x
+    tree = {i: [] for i in range(n)}
+    # prefer scaled edges, then more inliers
+    for a, b, r in sorted(edges, key=lambda e: (-int(e[2]["scaled"]), -e[2]["inliers"])):
+        if find(a) != find(b):
+            parent[find(a)] = find(b)
+            tree[a].append((b, r, "fwd")); tree[b].append((a, r, "rev"))
+    comps = {}
+    for i in range(n):
+        comps.setdefault(find(i), []).append(i)
+    comps = sorted(comps.values(), key=len, reverse=True)
+    log(f"components {[len(c) for c in comps][:12]}{' ...' if len(comps) > 12 else ''}")
+    C, c, comp_of = {}, {}, {}
+    for ci, comp in enumerate(comps):
+        cal_in = [i for i in comp if views[i].cal is not None]
+        if not cal_in:
+            continue
+        root = max(cal_in, key=lambda i: (len(tree[i]), views[i].cal["floor_share"]))
+        C[root], c[root], comp_of[root] = views[root].cal["Rg"].T, np.zeros(3), ci
+        # NB: cal["Rg"] maps camera->gravity frame, so camera->world = Rg (world = gravity frame)
+        C[root] = views[root].cal["Rg"]
+        stack = [root]
+        while stack:
+            j = stack.pop()
+            for k, r, dirn in tree[j]:
+                if k in C:
+                    continue
+                if dirn == "fwd":           # X_k = R X_j + t
+                    Ck = C[j] @ r["R"].T
+                    ck = c[j] - Ck @ r["t"]
+                else:                       # X_j = R X_k + t
+                    Ck = C[j] @ r["R"]
+                    ck = c[j] + C[j] @ r["t"]
+                v = views[k]
+                if v.cal is not None:       # keep chain heading, own gravity
+                    f_chain = Ck @ np.array([0, 0, 1.0]); f_own = v.cal["Rg"] @ np.array([0, 0, 1.0])
+                    yaw = np.arctan2(f_chain[0], f_chain[2]) - np.arctan2(f_own[0], f_own[2])
+                    Ck = Rotation.from_euler("y", yaw).as_matrix() @ v.cal["Rg"]
+                elif dirn == "fwd":         # inherit depth scale from the parent through the matches
+                    Xj = None
+                    a_ = views[j]
+                    if a_.depth is not None:
+                        za = _depth_at(a_, r["pa"])
+                        na = cv2.undistortPoints(r["pa"].reshape(-1, 1, 2), a_.K, None).reshape(-1, 2)
+                        Xa = np.stack([na[:, 0] * za, na[:, 1] * za, za], 1)
+                        zb = (Xa @ r["R"].T + r["t"])[:, 2]
+                        u = np.clip((r["pb"][:, 0] / DS).astype(int), 0, v.disp.shape[1] - 1)
+                        w = np.clip((r["pb"][:, 1] / DS).astype(int), 0, v.disp.shape[0] - 1)
+                        x = v.disp[w, u]; y = 1.0 / np.maximum(zb, 1e-3)
+                        ok = (zb > 0.2) & (za > 0.2)
+                        if ok.sum() > 10:
+                            sol, *_ = np.linalg.lstsq(np.stack([x[ok], np.ones(ok.sum())], 1), y[ok], rcond=None)
+                            if sol[0] > 0:
+                                v.depth = 1.0 / np.maximum(sol[0] * v.disp + sol[1], 1e-3)
+                C[k], c[k], comp_of[k] = Ck, ck, ci
+                stack.append(k)
+    return C, c, comp_of, comps, edges
+
+
+def write_pseudo(views, C, c, comp_of, out_dir, tier, extra_cols=None, prior=CAM_HEIGHT_PRIOR, fps=None):
+    placed = [i for i in sorted(C) if views[i].depth is not None]
+    main = max(set(comp_of[i] for i in placed), key=lambda k: sum(comp_of[i] == k for i in placed))
+    # components other than the largest are moved well apart (never overlapped) and flagged
+    offs, xmax = {}, None
+    P = {k: np.array([c[i] for i in placed if comp_of[i] == k]) for k in set(comp_of[i] for i in placed)}
+    for k in [main] + sorted(set(P) - {main}):
+        if xmax is None:
+            offs[k] = np.zeros(3); xmax = P[k][:, 0].max() + 8
+        else:
+            offs[k] = np.array([xmax - P[k][:, 0].min(), 0, 0]); xmax += np.ptp(P[k][:, 0]) + 14
+    os.makedirs(os.path.join(out_dir, "depth"), exist_ok=True)
+    rows = []
+    for fid, i in enumerate(placed):
+        v = views[i]
+        cv2.imwrite(os.path.join(out_dir, "depth", f"{fid:06d}.png"),
+                    np.clip(v.depth * 1000, 0, 65535).astype(np.uint16))
+        q = Rotation.from_matrix(C[i]).as_quat()
+        p = c[i] + offs[comp_of[i]]
+        s = 1920.0 / v.w
+        rows.append([float(fid) / fps if fps else float(fid), fid, *p, *q, v.K[0, 0] * s, v.K[1, 1] * s,
+                     v.K[0, 2] * s, v.K[1, 2] * s, v.name, v.group, comp_of[i], int(comp_of[i] == main),
+                     v.cal is not None])
+    df = pd.DataFrame(rows, columns=["timestamp", "frame", "x", "y", "z", "qx", "qy", "qz", "qw", "fx", "fy",
+                                     "cx", "cy", "image", "group", "component", "main_component",
+                                     "self_calibrated"])
+    df.to_csv(os.path.join(out_dir, "odometry.csv"), index=False)
+    v0 = views[placed[0]]
+    K0 = v0.K * (1920.0 / v0.w); K0[2, 2] = 1
+    np.savetxt(os.path.join(out_dir, "camera_matrix.csv"), K0, delimiter=",")
+    dh, dw = v0.depth.shape
+    meta = {"tier": tier, "per_frame_intrinsics": True, "rgb_size": [1920, int(round(dh * 1920 / dw))],
+            "depth_size": [dw, dh], "scale_prior_m": list(prior), "scale_sigma_rel": prior[1] / prior[0],
+            "frames": len(placed), "main_component_frames": int(df["main_component"].sum())}
+    # breaks between components (drift graph must not tie across them)
+    br = df.index[df["component"].diff().fillna(0) != 0].tolist()
+    meta["fragment_breaks"] = [int(x) for x in br]
+    json.dump(meta, open(os.path.join(out_dir, "meta.json"), "w"), indent=1)
+    return df, meta
