@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "roomplan/output.schema.json",
+  "title": "roomplan capture result",
+  "type": "object",
+  "required": ["schema_version", "capture", "tier", "units", "rooms", "openings", "adjacency", "damage", "concealed_damage_flags", "scope", "meta"],
+  "$defs": {
+    "measure": {
+      "type": "object",
+      "required": ["value", "ci95"],
+      "properties": {
+        "value": {"type": ["number", "null"]},
+        "ci95": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
+        "sigma": {"type": ["number", "null"]},
+        "status": {"enum": ["measured", "inferred", "not_observed"]},
+        "note": {"type": "string"}
+      }
+    }
+  },
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "capture": {"type": "string"},
+    "tier": {"enum": ["lidar", "video", "photo"]},
+    "units": {"const": "metres"},
+    "rooms": {"type": "array", "items": {
+      "type": "object",
+      "required": ["id", "polygon_m", "walls", "floor_area_m2", "ceiling_height_m"],
+      "properties": {
+        "id": {"type": "string"},
+        "name": {"type": "string"},
+        "polygon_m": {"type": "array", "items": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2}},
+        "walls": {"type": "array", "items": {
+          "type": "object",
+          "required": ["id", "from", "to", "length_m", "plane_measured", "ends_measured"],
+          "properties": {
+            "id": {"type": "string"},
+            "from": {"type": "array"}, "to": {"type": "array"},
+            "length_m": {"$ref": "#/$defs/measure"},
+            "plane_measured": {"type": "boolean", "description": "edge lies on a fitted wall plane"},
+            "ends_measured": {"type": "boolean", "description": "both terminating walls are fitted planes"}
+          }}},
+        "floor_area_m2": {"$ref": "#/$defs/measure"},
+        "perimeter_m": {"type": "number"},
+        "ceiling_height_m": {"$ref": "#/$defs/measure"}
+      }}},
+    "openings": {"type": "array", "items": {
+      "type": "object",
+      "required": ["id", "kind", "width_m", "rooms"],
+      "properties": {
+        "id": {"type": "string"},
+        "kind": {"enum": ["door", "passage", "window"]},
+        "axis": {"enum": ["x", "z"]}, "coord": {"type": "number"}, "span": {"type": "array"},
+        "width_m": {"$ref": "#/$defs/measure"},
+        "rooms": {"type": "array", "items": {"type": "string"}}
+      }}},
+    "adjacency": {"type": "array", "items": {"type": "array", "items": {"type": "string"}, "minItems": 2, "maxItems": 2}},
+    "damage": {"type": "array", "items": {
+      "type": "object",
+      "required": ["id", "surface", "class", "extent_m2", "score"],
+      "properties": {
+        "id": {"type": "string"}, "surface": {"type": "string"}, "room": {"type": "string"},
+        "class": {"enum": ["stain_discoloration", "crack", "mould_like", "surface_loss"]},
+        "extent_m2": {"$ref": "#/$defs/measure"},
+        "bbox_on_surface_m": {"type": "array"},
+        "score": {"type": "number"},
+        "evidence_frames": {"type": "array", "items": {"type": "integer"}}
+      }}},
+    "concealed_damage_flags": {"type": "array", "items": {
+      "type": "object", "required": ["surface", "rule", "evidence"],
+      "properties": {"surface": {"type": "string"}, "rule": {"type": "string"}, "evidence": {"type": "string"}}}},
+    "scope": {"type": "array", "items": {
+      "type": "object", "required": ["surface", "item", "quantity", "unit"],
+      "properties": {"surface": {"type": "string"}, "item": {"type": "string"},
+                     "quantity": {"$ref": "#/$defs/measure"}, "unit": {"type": "string"},
+                     "reason": {"type": "string"}}}},
+    "meta": {"type": "object"}
+  }
+}
