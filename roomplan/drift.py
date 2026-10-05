@@ -109,61 +109,141 @@ def _smooth(meas, w, tie, breaks):
     return np.linalg.solve(A, np.asarray(w, float) * np.asarray(meas, float))
 
 
-def estimate(scan: Scan, floor_y, top_y, theta, stride=10, seg_s=6.0, res=0.02, search=0.35,
-             frames=None, iters=2, tie=4.0):
+def wall_facing(walls, Q, cam_xz, tol=0.06):
+    """For each wall, which side the observing cameras were on (+1 / -1) along its normal axis.
+    Q: rotated points, cam_xz: per-point camera position in the same rotated xz frame."""
+    out = []
+    for w in walls:
+        if w.axis == "x":
+            sel = (np.abs(Q[:, 0] - w.coord) < tol) & (Q[:, 2] > w.lo) & (Q[:, 2] < w.hi)
+            side = np.sign(np.median(cam_xz[sel, 0] - w.coord)) if sel.any() else 0
+        else:
+            sel = (np.abs(Q[:, 2] - w.coord) < tol) & (Q[:, 0] > w.lo) & (Q[:, 0] < w.hi)
+            side = np.sign(np.median(cam_xz[sel, 1] - w.coord)) if sel.any() else 0
+        out.append(int(side))
+    return out
+
+
+def _seg_walls(scan, frames, floor_y, top_y, theta, corr=None):
+    from .walls import extract_walls
+    from .planes import rotate_xz
+    P, F = fuse(scan, frames=frames, voxel=0.015)
+    if corr is not None:
+        P = apply_to_points(P, *corr, theta=theta, pivot=_pivot_frames(scan, frames))
+    Q, R2 = rotate_xz(P, theta)
+    if len(Q) < 500:
+        return [], []
+    walls, *_ = extract_walls(Q, floor_y, top_y, min_len=0.3)
+    pos = dict(zip(scan.poses["frame"].to_numpy(), scan.positions()))
+    cam = np.array([pos[f] for f in F])
+    if corr is not None:
+        cam = apply_to_points(cam, *corr, theta=theta, pivot=_pivot_frames(scan, frames))
+    cam_xz = cam[:, [0, 2]] @ R2.T
+    return walls, wall_facing(walls, Q, cam_xz)
+
+
+def _match_shift(seg_walls, seg_face, ref_walls, ref_face, axis, tol=0.15, min_ov=0.3):
+    d, w = [], []
+    for a, fa in zip(seg_walls, seg_face):
+        if a.axis != axis or fa == 0:
+            continue
+        best = None
+        for b, fb in zip(ref_walls, ref_face):
+            if b.axis != axis or fb != fa:
+                continue
+            ov = min(a.hi, b.hi) - max(a.lo, b.lo)
+            if ov < min_ov:
+                continue
+            dd = a.coord - b.coord
+            if abs(dd) < tol and (best is None or abs(dd) < abs(best[0])):
+                best = (dd, ov)
+        if best:
+            d.append(best[0]); w.append(best[1])
+    if not d:
+        return 0.0, 0.0
+    d, w = np.array(d), np.array(w)
+    o = np.argsort(d); c = np.cumsum(w[o]) / w.sum()
+    med = d[o][np.searchsorted(c, 0.5)]
+    return float(med), float(min(w.sum(), 4.0) / 4.0)
+
+
+def estimate(scan: Scan, floor_y, top_y, theta, stride=10, seg_s=6.0, frames=None, tie=2.0,
+             tol=0.20, huber=0.03, min_gap_s=0.0):
+    """Per-segment (yaw, dx, dz, dy) corrections from a pose graph over time segments.
+
+    * yaw, dy : absolute unary factors (walls are orthogonal, the floor is level), smoothed in time.
+    * dx, dz  : relative factors between EVERY pair of segments that see a common wall face
+                (same axis, same observed side, overlapping >= 0.3 m, within `tol`). Pairs far apart in
+                time are exactly the loop closures. Solved jointly by robust (Huber-IRLS) least squares,
+                with a weak smoothness tie between consecutive segments (dropped across pose jumps) and the
+                mean correction fixed to zero (gauge).
+    """
     frames = frames if frames is not None else depth_frame_ids(scan, stride)
     segs, breaks = split_segments(scan, frames, seg_s)
-    clouds = [fuse(scan, frames=s.frames, voxel=0.02)[0] for s in segs]
-    allP = np.concatenate(clouds)
-    c, s_ = np.cos(np.radians(theta)), np.sin(np.radians(theta))
-    R2 = np.array([[c, s_], [-s_, c]])
-    xz = allP[:, [0, 2]] @ R2.T
-    lo = xz.min(0) - 1.0
-    shape = tuple(np.ceil((xz.max(0) + 1.0 - lo) / res).astype(int)[::-1])
-    # 1) yaw and height per segment
-    for sg, P in zip(segs, clouds):
+    n = len(segs)
+    for sg in segs:
+        P = fuse(scan, frames=sg.frames, voxel=0.02)[0]
         sl = (P[:, 1] > floor_y + 0.3) & (P[:, 1] < top_y - 0.2)
-        sg.w_yaw = float(min(sl.sum(), 4000)) / 4000.0
         if sl.sum() > 400:
             th = dominant_angle(P, floor_y + 0.3, top_y - 0.2)
             sg.yaw = float(((th - theta + 45) % 90) - 45)
-        else:
-            sg.w_yaw = 0.0
+            sg.w_yaw = float(min(sl.sum(), 4000)) / 4000.0
         fl = P[np.abs(P[:, 1] - floor_y) < 0.08, 1]
         sg.dy = float(np.median(fl) - floor_y) if len(fl) > 200 else 0.0
-    yaw_s = _smooth([s.yaw for s in segs], [s.w_yaw for s in segs], tie, breaks)
-    dy_s = _smooth([s.dy for s in segs], [1.0] * len(segs), tie, breaks)
-    # 2) translation per segment, iterated against a leave-one-out reference
-    tx = np.zeros(len(segs)); tz = np.zeros(len(segs))
-    for it in range(iters):
-        maps = []
-        for k, (sg, P) in enumerate(zip(segs, clouds)):
-            Pc = apply_to_points(P, -yaw_s[k], tx[k], tz[k], dy_s[k], theta, pivot=_pivot(scan, sg))
-            maps.append(_wall_map(Pc, floor_y, top_y, lo, shape, res, theta))
-        total = np.sum(maps, axis=0)
-        mx, mz, wx = np.zeros(len(segs)), np.zeros(len(segs)), np.zeros(len(segs))
-        for k, m in enumerate(maps):
-            if m.sum() < 50:
+    yaw_s = _smooth([s.yaw for s in segs], [s.w_yaw for s in segs], tie * 2, breaks)
+    dy_s = _smooth([s.dy for s in segs], [1.0] * n, tie * 2, breaks)
+    sw = [_seg_walls(scan, sg.frames, floor_y, top_y, theta, (yaw_s[k], 0, 0, dy_s[k]))
+          for k, sg in enumerate(segs)]
+    edges = {"x": [], "z": []}
+    for i in range(n):
+        for j in range(i + 1, n):
+            if min_gap_s and segs[j].t0 - segs[i].t1 < min_gap_s and j != i + 1:
                 continue
-            ref = total - m
-            (dx, dz), ratio = _xcorr_shift(ref, m, int(search / res))
-            mx[k], mz[k] = dx * res, dz * res
-            wx[k] = float(np.clip((ratio - 1.0) / 4.0, 0, 1))
-        tx = tx + _smooth(mx, wx, tie, breaks)
-        tz = tz + _smooth(mz, wx, tie, breaks)
+            for ax in ("x", "z"):
+                d, w = _match_shift(sw[j][0], sw[j][1], sw[i][0], sw[i][1], ax, tol=tol)
+                if w > 0.05:
+                    edges[ax].append((i, j, d, w))
+    sol = {}
+    for ax in ("x", "z"):
+        E = edges[ax]
+        t = np.zeros(n)
+        for _ in range(6):
+            A = np.zeros((n, n)); b = np.zeros(n)
+            for i, j, d, w in E:
+                r = t[j] - t[i] - d
+                wr = w * (1.0 if abs(r) <= huber else huber / abs(r))
+                A[i, i] += wr; A[j, j] += wr; A[i, j] -= wr; A[j, i] -= wr
+                b[i] -= wr * d; b[j] += wr * d
+            for k in range(n - 1):
+                if not breaks.get(k):
+                    A[k, k] += tie * 0.05; A[k + 1, k + 1] += tie * 0.05
+                    A[k, k + 1] -= tie * 0.05; A[k + 1, k] -= tie * 0.05
+            A += 1.0 / n          # gauge: penalise the mean (sum t)^2
+            t = np.linalg.solve(A, b)
+        sol[ax] = t
+        sol[ax + "_edges"] = len(E)
+        sol[ax + "_resid"] = float(np.sqrt(np.mean([(t[j] - t[i] - d) ** 2 for i, j, d, w in E]))) if E else 0.0
     for k, sg in enumerate(segs):
-        sg.yaw, sg.dx, sg.dz, sg.dy = float(yaw_s[k]), float(tx[k]), float(tz[k]), float(dy_s[k])
-    return segs, breaks
+        sg.yaw, sg.dx, sg.dz, sg.dy = float(yaw_s[k]), float(sol["x"][k]), float(sol["z"][k]), float(dy_s[k])
+    info = {"n_segments": n, "jumps": int(sum(bool(v) for v in breaks.values())),
+            "edges_x": sol["x_edges"], "edges_z": sol["z_edges"],
+            "rms_edge_residual_x_m": sol["x_resid"], "rms_edge_residual_z_m": sol["z_resid"]}
+    return segs, breaks, info
 
 
-def _pivot(scan: Scan, sg: Segment):
-    p = scan.positions()[np.isin(scan.poses["frame"].to_numpy(), sg.frames)]
+def _pivot_frames(scan: Scan, frames):
+    p = scan.positions()[np.isin(scan.poses["frame"].to_numpy(), frames)]
     return p.mean(0)
 
 
+def _pivot(scan: Scan, sg: Segment):
+    return _pivot_frames(scan, sg.frames)
+
+
 def apply_to_points(P, yaw_deg, dx, dz, dy, theta, pivot):
-    """Rotate about the vertical axis through pivot by yaw_deg, then shift (dx, dz) in the Manhattan frame
-    and dy vertically. Returns new points in the original world frame."""
+    """Undo a measured segment error (yaw_deg, dx, dz, dy): yaw_deg is how far the segment's Manhattan angle
+    sits above the global one, (dx, dz) how far its walls sit from the global walls in the Manhattan frame,
+    dy its floor offset. Verified: applying yaw_deg=+1 lowers the measured Manhattan angle by ~1 deg."""
     Rw = Rotation.from_euler("y", yaw_deg, degrees=True).as_matrix()
     Q = (P - pivot) @ Rw.T + pivot
     c, s = np.cos(np.radians(theta)), np.sin(np.radians(theta))
@@ -182,7 +262,7 @@ def corrected_poses(scan: Scan, segs, theta):
     piv = np.array([_pivot(scan, s) for s in segs])
     def interp(v):
         return np.interp(t, tc, v)
-    yaw = interp([-s.yaw for s in segs]); dx = interp([s.dx for s in segs]); dz = interp([s.dz for s in segs])
+    yaw = interp([s.yaw for s in segs]); dx = interp([s.dx for s in segs]); dz = interp([s.dz for s in segs])
     dy = interp([s.dy for s in segs])
     px, py, pz = interp(piv[:, 0]), interp(piv[:, 1]), interp(piv[:, 2])
     P = df[["x", "y", "z"]].to_numpy()
