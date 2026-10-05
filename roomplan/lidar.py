@@ -90,7 +90,10 @@ def run(root, stride=10, voxel=0.015, drift_sigma_per_m=0.0, frames=None, theta=
     Q, R2 = rotate_xz(P, th)
     # wall evidence is gathered up to just under the ceiling when one was found (walls seen only high up
     # still count), else up to 2.2 m above the floor
-    walls, ext, lo, res = extract_walls(Q, fy, min(top, fy + 3.2) if fc["ceiling"] else fy + 2.2)
+    # mono depth (video/photo) smears a wall over ~+-10 cm: coarser cells and a wider face band there
+    wres, wtol = (0.04, 0.06) if tier == "lidar" else (0.08, 0.12)
+    walls, ext, lo, res = extract_walls(Q, fy, min(top, fy + 3.2) if fc["ceiling"] else fy + 2.2,
+                                        res=wres, face_tol=wtol)
     # which side each wall face was seen from: a room edge may only snap to a face seen from inside it
     from .drift import wall_facing
     posd = dict(zip(scan.poses["frame"].to_numpy(), scan.positions()))
@@ -98,7 +101,8 @@ def run(root, stride=10, voxel=0.015, drift_sigma_per_m=0.0, frames=None, theta=
     for w, fc_ in zip(walls, wall_facing(walls, Q, cam_pts)):
         w.facing = fc_
     free, occ, g = carve(scan, R2, fy, frames=frames, stride=stride, res=0.03)
-    rooms, openings, barrier, space = segment(free, occ, g, walls)
+    # photos: a few dozen views, so a cell seen free once counts (LiDAR: hundreds of frames, need 2)
+    rooms, openings, barrier, space = segment(free, occ, g, walls, grow_min_free=1 if tier == "photo" else None)
     from .layout import refine_jambs
     for o in openings:
         refine_jambs(o, Q, fy)

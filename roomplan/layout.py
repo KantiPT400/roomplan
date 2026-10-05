@@ -72,7 +72,8 @@ def find_gaps(walls: list[Wall], min_w=0.55, max_w=1.40, tol=0.15, min_jamb=0.5)
     return keep
 
 
-def segment(free, occ, g: Grid, walls: list[Wall], min_free=2, min_area=1.2, wall_px=2):
+def segment(free, occ, g: Grid, walls: list[Wall], min_free=2, min_area=1.2, wall_px=2, grow_min_free=None,
+            grow_m=1.0):
     barrier = np.zeros(g.shape, np.uint8)
     for w in walls:
         p, q = _seg_px(g, w.axis, w.coord, w.lo, w.hi)
@@ -93,6 +94,15 @@ def segment(free, occ, g: Grid, walls: list[Wall], min_free=2, min_area=1.2, wal
         if a >= min_area:
             k += 1
             rooms[lab == i] = k
+    if grow_min_free is not None:
+        # sparse views (photos): rooms are segmented on cells seen free >= min_free times (walls hold), then
+        # each room grows into nearby cells seen free only grow_min_free times (recovers the footprint)
+        ext_space = (free >= grow_min_free) & (barrier == 0) & (gap_mask == 0) & (rooms == 0)
+        dist, (iy, ix) = ndimage.distance_transform_edt(rooms == 0, return_indices=True)
+        grow = ext_space & (dist * g.res <= grow_m)
+        rooms = rooms.copy()
+        rooms[grow] = rooms[iy[grow], ix[grow]]
+        space = space | ((free >= grow_min_free) & (barrier == 0))
     # openings: which rooms touch each side of each gap
     real = []
     for idx, o in enumerate(gaps):
