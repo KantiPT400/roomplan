@@ -1,21 +1,32 @@
 """Video tier: a plain handheld clip (no depth, no poses) -> same output contract.
 
-frames (6 fps) -> pycolmap SfM (may fragment) -> mono depth aligned to SfM points -> pseudo-LiDAR
-folder (pseudo.py) -> the LiDAR-tier geometry with drift correction, with intervals widened by the
-metric-scale prior and the mono-depth shape error.
+First version used pycolmap incremental SfM; on the sample walkthroughs it fragmented into 7-17 models
+(white walls, motion blur) and the fragments could not be chained reliably. This version reuses the photo
+tier's machinery, which does not need long feature tracks:
+
+  frames (3 fps, upright) -> per-frame metric depth + gravity (singleview.py) -> each frame registered to
+  the next few frames (essential matrix, floor features masked, translation from metric depth) ->
+  global heading/position solve (mvreg.refine) -> pseudo-LiDAR folder -> shared geometry with the
+  drift pose graph (fragment breaks respected) -> intervals widened by the camera-height scale prior.
+
+Orientation: phone videos normally carry a rotation tag that ffmpeg applies; capture-app exports may be
+sensor-oriented (the sample rgb.mp4 is). The upright rotation is chosen once per clip as the one under which
+single-view floor detection succeeds most often on a few probe frames.
 """
 from __future__ import annotations
 import os
 import subprocess
-from .sfm import run_sfm
-from . import pseudo
+import numpy as np
+import cv2
+from .mvreg import View, layout, write_pseudo
+from .singleview import calibrate
+from .mono import disparity
 from .lidar import run as run_geometry
 
-FPS = 6
+FPS = 3
 WIDTH = 960
-# iPhone 15 main camera, 26 mm-equivalent: horizontal FOV ~69 deg on a 4:3 frame -> f ~ 0.72 * width.
-# Only a prior: SfM refines it.
-FOCAL_FRAC = 0.72
+FOCAL_FRAC = 0.80        # iPhone 1x video, focal / long side (prior; sample capture: 0.833)
+NEIGHBOURS = 4
 
 
 def find_video(path):
@@ -29,22 +40,69 @@ def find_video(path):
 
 def extract_frames(video, out_dir, fps=FPS, width=WIDTH):
     os.makedirs(out_dir, exist_ok=True)
-    if any(f.endswith(".jpg") for f in os.listdir(out_dir)):
-        return
-    subprocess.run(["ffmpeg", "-v", "error", "-i", video, "-vf", f"fps={fps},scale={width}:-2",
-                    "-q:v", "3", os.path.join(out_dir, "f_%05d.jpg")], check=True)
+    if not any(f.endswith(".jpg") for f in os.listdir(out_dir)):
+        subprocess.run(["ffmpeg", "-v", "error", "-i", video, "-vf", f"fps={fps},scale='if(gt(iw,ih),{width},-2)':'if(gt(iw,ih),-2,{width})'",
+                        "-q:v", "3", os.path.join(out_dir, "f_%05d.jpg")], check=True)
+    return sorted(f for f in os.listdir(out_dir) if f.endswith(".jpg"))
 
 
-def run(capture, out_dir, fps=FPS):
+ROTS = {0: None, 90: cv2.ROTATE_90_CLOCKWISE, 180: cv2.ROTATE_180, 270: cv2.ROTATE_90_COUNTERCLOCKWISE}
+
+
+def _K(w, h):
+    f = FOCAL_FRAC * max(w, h)
+    return np.array([[f, 0, w / 2], [0, f, h / 2], [0, 0, 1.0]])
+
+
+def choose_rotation(img_dir, names, n_probe=8):
+    probe = names[:: max(1, len(names) // n_probe)][:n_probe]
+    score = {}
+    for deg, code in ROTS.items():
+        ok = 0
+        for nm in probe:
+            img = cv2.imread(os.path.join(img_dir, nm))
+            if code is not None:
+                img = cv2.rotate(img, code)
+            h, w = img.shape[:2]
+            d = cv2.resize(disparity(img), (w // 4, h // 4), interpolation=cv2.INTER_AREA)
+            K = _K(w, h); K[:2] /= 4
+            c = calibrate(d, K)
+            ok += c is not None and c["floor_share"] > 0.1
+        score[deg] = ok
+    return max(score, key=score.get), score
+
+
+def run(capture, out_dir, fps=FPS, log=print):
     work = os.path.join(out_dir, "work")
-    img = os.path.join(work, "images")
-    extract_frames(find_video(capture), img, fps)
-    frags = run_sfm(img, os.path.join(work, "sfm"), focal_px=FOCAL_FRAC * WIDTH, sequential=True, overlap=25)
+    raw = os.path.join(work, "frames")
+    names = extract_frames(find_video(capture), raw, fps)
+    rot, score = choose_rotation(raw, names)
+    log(f"frames {len(names)}, upright rotation {rot} deg (probe floor hits {score})")
+    up = os.path.join(work, "images")
+    os.makedirs(up, exist_ok=True)
+    cache = os.path.join(work, "disp_cache")
+    os.makedirs(cache, exist_ok=True)
+    views = []
+    for nm in names:
+        dst = os.path.join(up, nm)
+        if not os.path.exists(dst):
+            img = cv2.imread(os.path.join(raw, nm))
+            if ROTS[rot] is not None:
+                img = cv2.rotate(img, ROTS[rot])
+            cv2.imwrite(dst, img, [cv2.IMWRITE_JPEG_QUALITY, 92])
+        img = cv2.imread(dst)
+        h, w = img.shape[:2]
+        views.append(View(nm, img, _K(w, h), "video", cache))
+    n = len(views)
+    log(f"self-calibrated frames {sum(v.cal is not None for v in views)}/{n}")
+    pairs = [(i, j) for i in range(n) for j in range(i + 1, min(n, i + 1 + NEIGHBOURS))]
+    pairs += [(j, i) for i, j in pairs]
+    C, c, comp_of, comps, edges = layout(views, pairs, log)
     pdir = os.path.join(work, "pseudo")
-    log = open(os.path.join(work, "pseudo.log"), "w")
-    meta = pseudo.build(frags, img, pdir, os.path.join(work, "depth_cache"), "video", fps=fps,
-                        log=lambda m: (print(m), log.write(m + "\n")))
+    df, meta = write_pseudo(views, C, c, comp_of, pdir, "video", fps=fps)
     plan, dbg = run_geometry(pdir, stride=1, drift="on")
-    plan["meta"]["sfm_fragments"] = len(frags)
-    plan["meta"]["frames_registered"] = meta["frames"]
+    plan["meta"].update({"frames_total": n, "frames_placed": int(len(df)),
+                         "frames_in_main_component": int(df["main_component"].sum()),
+                         "components": [len(cc) for cc in comps if len(cc) > 1][:20],
+                         "registered_pairs": len(edges), "upright_rotation_deg": rot})
     return plan, dbg

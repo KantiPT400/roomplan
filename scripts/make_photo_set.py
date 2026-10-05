@@ -24,9 +24,10 @@ from scipy.spatial.transform import Rotation
 ap = argparse.ArgumentParser()
 ap.add_argument("capture"); ap.add_argument("plan"); ap.add_argument("out")
 ap.add_argument("--per-room", type=int, default=6)
+ap.add_argument("--manifest", help="re-create an existing set exactly from its manifest.json (frame numbers)")
 a = ap.parse_args()
 
-plan = json.load(open(a.plan))
+plan = json.load(open(a.plan)) if not a.manifest else {"meta": {"manhattan_theta_deg": 0.0}, "rooms": [], "openings": []}
 th = plan["meta"]["manhattan_theta_deg"]
 c, s = np.cos(np.radians(th)), np.sin(np.radians(th))
 R2 = np.array([[c, s], [-s, c]])
@@ -89,6 +90,8 @@ for o in plan["openings"]:
         sel.setdefault(target, []).append(i)
 video = os.path.join(a.capture, "rgb.mp4")
 manifest = {room: sorted(set(int(f) for f in frames)) for room, frames in sel.items() if len(frames) >= 2}
+if a.manifest:
+    manifest = json.load(open(a.manifest))["frames"]
 need = sorted(set(sum(manifest.values(), [])))
 tmp = os.path.join(a.out, "_frames"); os.makedirs(tmp, exist_ok=True)
 # one decoding pass: select every needed frame, written in order, then renamed by frame number

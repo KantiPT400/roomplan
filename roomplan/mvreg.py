@@ -43,7 +43,28 @@ class View:
         self.cal = calibrate(self.disp, Ks)
         self.depth = depth_from(self.disp, self.cal) if self.cal else None
         g = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        self.kp, self.des = SIFT.detectAndCompute(g, None)
+        # Floor tiles repeat: on the sample apartment 186 of 203 essential-matrix registrations were wrong
+        # (median 112 deg off the LiDAR truth), with 61% of their inliers on the floor, linking photos 4 m
+        # apart. Features on the floor plane are therefore not used for matching.
+        mask = None
+        self.floor_mask = None
+        if self.cal is not None:
+            Ks = K.copy(); Ks[:2] /= DS
+            z = self.depth
+            hh, ww = z.shape
+            vv, uu = np.mgrid[0:hh, 0:ww]
+            P = np.stack([(uu - Ks[0, 2]) / Ks[0, 0] * z, (vv - Ks[1, 2]) / Ks[1, 1] * z, z], -1)
+            yg = (P @ self.cal["Rg"].T)[..., 1]            # height in the gravity frame, camera at 0
+            # metric scale was set so the floor plane is exactly CAM_HEIGHT_PRIOR below the camera
+            fl = (yg < -CAM_HEIGHT_PRIOR[0] + 0.15)
+            fl = cv2.dilate(fl.astype(np.uint8), np.ones((3, 3), np.uint8))
+            self.floor_mask = cv2.resize(fl, (self.w, self.h), interpolation=cv2.INTER_NEAREST) > 0
+        else:
+            # no floor estimate: photos are upright and the protocol keeps floor at the bottom
+            self.floor_mask = np.zeros((self.h, self.w), bool)
+            self.floor_mask[int(0.65 * self.h):] = True
+        mask = (~self.floor_mask).astype(np.uint8) * 255
+        self.kp, self.des = SIFT.detectAndCompute(g, mask)
 
 
 SIFT = cv2.SIFT_create(nfeatures=4000, contrastThreshold=0.02)
@@ -109,6 +130,20 @@ def register(a: View, b: View):
                            "pa": pa[ok][i], "pb": pb[ok][i]}
     if res is None:
         return None
+    # depth consistency: a's 3-D points moved into b must land at b's own (independently estimated) depth
+    if a.depth is not None and b.depth is not None and res["scaled"]:
+        za = _depth_at(a, res["pa"])
+        na_ = cv2.undistortPoints(res["pa"].reshape(-1, 1, 2), a.K, None).reshape(-1, 2)
+        Xa = np.stack([na_[:, 0] * za, na_[:, 1] * za, za], 1)
+        zb_pred = (Xa @ res["R"].T + res["t"])[:, 2]
+        zb_own = _depth_at(b, res["pb"])
+        ok = (za > 0.2) & (zb_own > 0.2) & (zb_pred > 0.2)
+        if ok.sum() < 10:
+            return None
+        ratio = np.median(zb_pred[ok] / zb_own[ok])
+        if not (0.7 < ratio < 1.4):
+            return None
+        res["depth_ratio"] = float(ratio)
     # gravity consistency between self-calibrated views
     if a.cal is not None and b.cal is not None:
         ua = a.cal["Rg"].T @ np.array([0, 1.0, 0]); ub = b.cal["Rg"].T @ np.array([0, 1.0, 0])
@@ -269,16 +304,13 @@ def refine(views, edges, C, c, comp_of, log=print, iters=30, yaw_gate=np.radians
 
 
 def write_pseudo(views, C, c, comp_of, out_dir, tier, extra_cols=None, prior=CAM_HEIGHT_PRIOR, fps=None):
-    placed = [i for i in sorted(C) if views[i].depth is not None]
-    main = max(set(comp_of[i] for i in placed), key=lambda k: sum(comp_of[i] == k for i in placed))
-    # components other than the largest are moved well apart (never overlapped) and flagged
-    offs, xmax = {}, None
-    P = {k: np.array([c[i] for i in placed if comp_of[i] == k]) for k in set(comp_of[i] for i in placed)}
-    for k in [main] + sorted(set(P) - {main}):
-        if xmax is None:
-            offs[k] = np.zeros(3); xmax = P[k][:, 0].max() + 8
-        else:
-            offs[k] = np.array([xmax - P[k][:, 0].min(), 0, 0]); xmax += np.ptp(P[k][:, 0]) + 14
+    placed_all = [i for i in sorted(C) if views[i].depth is not None]
+    main = max(set(comp_of[i] for i in placed_all), key=lambda k: sum(comp_of[i] == k for i in placed_all))
+    # Only the largest connected component is mapped. Smaller components have no known position relative
+    # to it; laying them out side by side (first version) produced sites hundreds of metres wide whose
+    # grids exhausted memory. They are reported as unplaced instead.
+    placed = [i for i in placed_all if comp_of[i] == main]
+    offs = {main: np.zeros(3)}
     os.makedirs(os.path.join(out_dir, "depth"), exist_ok=True)
     rows = []
     for fid, i in enumerate(placed):

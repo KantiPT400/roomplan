@@ -42,7 +42,12 @@ def carve(scan: Scan, R2: np.ndarray, floor_y: float, frames=None, stride=10, re
         if len(H):
             per.append((H @ R2.T, c @ R2.T))
     allp = np.concatenate([h for h, _ in per] + [c[None] for _, c in per])
-    g = Grid(allp.min(0) - pad, allp.max(0) + pad, res)
+    lo_, hi_ = allp.min(0) - pad, allp.max(0) + pad
+    if np.any(hi_ - lo_ > 60):
+        lo_, hi_ = np.percentile(allp, 0.5, axis=0) - pad, np.percentile(allp, 99.5, axis=0) + pad
+    if np.prod((hi_ - lo_) / res) > 4e7:
+        raise RuntimeError("free-space grid too large: poses are broken")
+    g = Grid(lo_, hi_, res)
     free = np.zeros(g.shape, np.int32)
     occ = np.zeros(g.shape, np.int32)
     for H, c in per:
@@ -50,7 +55,8 @@ def carve(scan: Scan, R2: np.ndarray, floor_y: float, frames=None, stride=10, re
         ci = tuple(g.ij(c))
         ray = np.zeros(g.shape, np.uint8)
         hit = np.zeros(g.shape, np.uint8)
-        for hx, hz in np.unique(hi, axis=0):
+        inb = (hi[:, 0] >= 0) & (hi[:, 1] >= 0) & (hi[:, 0] < g.shape[1]) & (hi[:, 1] < g.shape[0])
+        for hx, hz in np.unique(hi[inb], axis=0):
             cv2.line(ray, ci, (int(hx), int(hz)), 1, 1)
             hit[hz, hx] = 1
         free += ray

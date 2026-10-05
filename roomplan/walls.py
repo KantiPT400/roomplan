@@ -28,8 +28,16 @@ class Wall:
 
 
 def extent_map(Q, floor_y, top_y, res=0.04, bin_h=0.10, margin=0.15):
+    # robust bounds: a handful of far-away points (bad poses) must not blow up the grid
     lo = Q[:, [0, 2]].min(0) - 0.3
     hi = Q[:, [0, 2]].max(0) + 0.3
+    if np.any(hi - lo > 60):                   # not a home: trim stray points from broken poses
+        lo = np.percentile(Q[:, [0, 2]], 0.5, axis=0) - 0.5
+        hi = np.percentile(Q[:, [0, 2]], 99.5, axis=0) + 0.5
+    if np.prod((hi - lo) / res) > 4e7:
+        raise RuntimeError(f"site extent {np.round(hi - lo, 1)} m is not a building: poses are broken")
+    keep = np.all((Q[:, [0, 2]] >= lo) & (Q[:, [0, 2]] <= hi), axis=1)
+    Q = Q[keep]
     shape = np.ceil((hi - lo) / res).astype(int)
     bins = np.arange(floor_y + margin, top_y - margin + 1e-6, bin_h)
     nb = len(bins) - 1
