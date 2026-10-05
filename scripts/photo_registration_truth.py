@@ -13,6 +13,11 @@ import roomplan.photo as ph
 import roomplan.mvreg as mv
 
 photos, capture, work, out_csv = sys.argv[1:5]
+if len(sys.argv) > 5:                      # score another version of mvreg.py (e.g. the before commit)
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("roomplan.mvreg_alt", sys.argv[5])
+    mv = importlib.util.module_from_spec(spec); sys.modules["roomplan.mvreg_alt"] = mv
+    spec.loader.exec_module(mv)
 od = pd.read_csv(os.path.join(capture, "odometry.csv")); od.columns = [c.strip() for c in od.columns]
 items = ph.collect(photos, os.path.join(work, "images"))
 os.makedirs(os.path.join(work, "disp_cache"), exist_ok=True)
@@ -21,7 +26,15 @@ views = [mv.View(it["name"], cv2.imread(os.path.join(work, "images", it["name"])
 fr = [int(it["name"].split("IMG_")[1][:5]) for it in items]
 Q = Rot.from_quat(od[["qx", "qy", "qz", "qw"]].to_numpy(float))
 P = od[["x", "y", "z"]].to_numpy(float)
-F = np.diag([1, -1, -1.0])            # ARKit camera (x right, y up, z back) -> OpenCV camera
+# odometry poses are camera-to-world for the OpenCV camera (x right, y down, z forward): this is the
+# convention fuse.py relies on. The photo images were turned upright by make_photo_set.py, which rotates the
+# camera frame about its optical axis; S undoes that. (A first version applied an ARKit y/z flip and no S,
+# which mis-scored almost every registration as wrong; see docs/fix_loop_declaration.md.)
+def upright_S(fi):
+    up = Q[fi].inv().apply([0, 1.0, 0])
+    ux, uy = up[0], up[1]
+    deg = (0 if uy < 0 else 180) if abs(uy) >= abs(ux) else (90 if ux < 0 else -90)
+    return Rot.from_euler("z", deg, degrees=True).as_matrix()
 rows = []
 for a in range(len(views)):
     for b in range(len(views)):
@@ -30,8 +43,9 @@ for a in range(len(views)):
         r = mv.register(views[a], views[b])
         if r is None:
             continue
-        Ra = Q[fr[a]].as_matrix() @ F; Rb = Q[fr[b]].as_matrix() @ F
-        err = np.degrees(Rot.from_matrix(r["R"] @ (Rb.T @ Ra).T).magnitude())
+        Ra, Rb = Q[fr[a]].as_matrix(), Q[fr[b]].as_matrix()
+        Rt = upright_S(fr[b]) @ Rb.T @ Ra @ upright_S(fr[a]).T
+        err = np.degrees(Rot.from_matrix(r["R"] @ Rt.T).magnitude())
         rows.append({"a": items[a]["name"], "b": items[b]["name"], "room_a": items[a]["room"], "room_b": items[b]["room"],
                      "method": r["method"], "inliers": r["inliers"], "rot_err_deg": round(float(err), 2),
                      "floor_frac_inliers": round(float(np.mean(r["pa"][:, 1] > 0.6 * views[a].h)), 3),

@@ -18,18 +18,28 @@ capture (`scripts/benchmark.py --tag before`, file `out/benchmark/benchmark_befo
 ## 2. Root-cause hypothesis and evidence
 
 **Hypothesis: most pairwise registrations are false, caused by the repetitive floor tiles; the global
-solve cannot recover because false edges outnumber true ones ~11:1.**
+solve cannot recover because false edges outnumber true ones ~3.5:1.**
 
-Evidence (`scripts/photo_registration_truth.py`; every photo has a true ARKit pose because the set was cut
-from a LiDAR capture; file `out/benchmark/photo_edges_truth_before.csv`):
-- 203 registrations were accepted; **186 are off by > 15 deg** (median rotation error 112 deg); only 7 are
-  within 5 deg.
-- inliers of the false registrations lie on the floor (lower 40% of the image) **61%** of the time vs **9%**
-  for the true ones;
-- false registrations join photos a median **3.98 m** apart (they cannot overlap); true ones 0.03 m;
-- false registrations cross room folders 72% of the time; true ones 29%;
-- false registrations have a median of 50 inliers vs 209: the 25-inlier acceptance threshold lets a tile
-  grid through, and an essential matrix fitted to a near-planar pattern is degenerate.
+Evidence (`scripts/photo_registration_truth.py`; every photo has a true pose because the set was cut from a
+LiDAR capture; file `out/benchmark/photo_edges_truth_before.csv`, scored with the before code `1c92fa8`):
+
+| | false registrations (> 15 deg off) | true registrations (< 5 deg) |
+|---|---|---|
+| count (of 203 accepted) | **157** (median error 121 deg) | 44 |
+| share of inliers on the floor (lower 40% of image) | **71%** | 7% |
+| photos in the same room folder | 15% | 95% |
+| true distance between the two photos | 4.48 m (cannot overlap) | 0.47 m |
+| median inliers | 44 | 131 |
+
+The 25-inlier acceptance threshold lets a tile grid through, and an essential matrix fitted to a near-planar
+repetitive pattern is degenerate.
+
+**Correction (made before the fix was run or scored):** the first version of this declaration (commit
+`b7fe7ff`) said 186 of 203 registrations were false. That came from a bug in the truth checker: it applied an
+ARKit y/z axis flip that the Stray Scanner poses do not need (they are already OpenCV camera-to-world, as
+`fuse.py` uses them) and ignored the 90 deg rotation that makes the photos upright. Rotation magnitudes
+matched the truth within ~1 deg while full rotations did not, which exposed it. Re-scored with the corrected
+checker, 157 of 203 are false; the hypothesis and the fix are unchanged, the numbers above are the corrected ones.
 
 ## 3. Fix we will ship, and the predicted numbers
 
@@ -40,7 +50,7 @@ from a LiDAR capture; file `out/benchmark/photo_edges_truth_before.csv`):
 - Keep the existing gravity-consistency check.
 
 Predicted after the fix (same photo set, same benchmark script):
-- >= 60% of accepted registrations within 5 deg of truth (before: 3%);
+- >= 60% of accepted registrations within 5 deg of truth (before: 22%);
 - >= 4 of 8 LiDAR rooms matched by photo-tier rooms (before: 0);
 - footprint ratio within 0.80-1.20 (before: 0.543).
 We expect the +-8% footprint gate itself to remain at risk: metric scale in this tier comes from the

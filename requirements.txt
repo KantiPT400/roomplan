@@ -3,3 +3,8 @@ scipy>=1.10
 opencv-python-headless>=4.8
 pandas>=2.0
 matplotlib>=3.7
+pycolmap>=3.10        # video tier SfM (and fallbacks)
+onnxruntime>=1.17     # monocular depth (Depth Anything V2 small, ONNX, CPU)
+pillow>=10
+pillow-heif>=0.16     # iPhone HEIC photos
+# also needs the ffmpeg binary on PATH (apt install ffmpeg / brew install ffmpeg / winget install ffmpeg)
