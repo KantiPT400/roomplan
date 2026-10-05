@@ -72,6 +72,32 @@ def find_gaps(walls: list[Wall], min_w=0.55, max_w=1.40, tol=0.15, min_jamb=0.5)
     return keep
 
 
+MIN_REACH = 0.7     # m of walkable space beyond a one-room opening; less = a recess, not a doorway
+
+
+def _reach(o: Opening, sgn, space, barrier, g: Grid, max_d=1.5):
+    """Median depth of observed free space beyond an opening on side `sgn`, stopping at a wall line or at two
+    consecutive unobserved cells (5 probe lines across the opening)."""
+    off = np.zeros(2)
+    off[0 if o.axis == "x" else 1] = sgn
+    reach = []
+    for t in np.linspace(o.lo + 0.1, o.hi - 0.1, 5):
+        p0 = np.array([o.coord, t]) if o.axis == "x" else np.array([t, o.coord])
+        d, miss, r = 0.09, 0, 0.09
+        while d <= max_d:
+            q = g.ij(p0 + off * d)
+            if not (0 <= q[1] < g.shape[0] and 0 <= q[0] < g.shape[1]) or barrier[q[1], q[0]]:
+                break
+            miss = 0 if space[q[1], q[0]] else miss + 1
+            if miss >= 2:
+                break
+            if miss == 0:
+                r = d
+            d += g.res
+        reach.append(r)
+    return float(np.median(reach))
+
+
 def segment(free, occ, g: Grid, walls: list[Wall], min_free=2, min_area=1.2, wall_px=2, grow_min_free=None,
             grow_m=1.0):
     barrier = np.zeros(g.shape, np.uint8)
@@ -129,7 +155,13 @@ def segment(free, occ, g: Grid, walls: list[Wall], min_free=2, min_area=1.2, wal
         if la and lb and la != lb:
             o.rooms = (la, lb)
         elif (la or lb) and min(fa, fb) >= 0.5 and la != lb:
-            o.rooms = (la or lb,)            # leads to observed space that is not a segmented room
+            # leads to observed space that is not a segmented room: a doorway to unscanned space, or only a
+            # recess (niche, alcove, wardrobe bay). A doorway leads somewhere you can walk into; a recess ends
+            # at its back wall within a few tens of cm (two such "doors", 0.3 and 0.5 m deep, appeared in both
+            # real captures and their widths disagreed by 4-9 cm, since a niche has no door frame).
+            if _reach(o, -1 if lb else 1, space, barrier, g) < MIN_REACH:
+                continue
+            o.rooms = (la or lb,)
         else:
             continue                          # same room on both sides, or blind on one side: phantom
         o.kind = "door" if o.width <= 1.10 else "passage"
