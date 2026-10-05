@@ -16,14 +16,18 @@ Z95 = 1.96
 # (absolute m, relative fraction) per tier
 TIER_SYSTEMATIC = {
     "lidar": (0.005, 0.004),
-    "video": (0.010, 0.020),   # metric scale comes from LiDAR-free priors, see video tier
-    "photo": (0.020, 0.040),
+    # video/photo: mono-depth shape error on top of which the metric-scale prior (camera height,
+    # pseudo.CAM_HEIGHT_PRIOR) is added per capture via scale_rel
+    "video": (0.010, 0.015),
+    "photo": (0.015, 0.025),
 }
 UNSUPPORTED_EDGE_SIGMA = 0.10   # edge not backed by a measured wall plane (bounded by furniture / unseen)
 
 
-def length_sigma(L, se_a, se_b, tier="lidar", drift=0.0, supported=True):
+def length_sigma(L, se_a, se_b, tier="lidar", drift=0.0, supported=True, scale_rel=None):
     a, r = TIER_SYSTEMATIC[tier]
+    if scale_rel is not None:
+        r = float(np.hypot(r, scale_rel))
     rnd2 = se_a ** 2 + se_b ** 2
     if not supported:
         rnd2 += UNSUPPORTED_EDGE_SIGMA ** 2

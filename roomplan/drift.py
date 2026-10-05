@@ -48,7 +48,8 @@ def pose_jumps(scan: Scan, vmax=2.5):
 
 
 def split_segments(scan: Scan, frames, seg_s=6.0):
-    jumps = set(pose_jumps(scan))
+    from .io import read_meta
+    jumps = set(pose_jumps(scan)) | set(read_meta(scan.root).get("fragment_breaks", []))
     ts = dict(zip(scan.poses["frame"].to_numpy(), scan.poses["timestamp"].to_numpy()))
     segs, cur, t0 = [], [], None
     allf = scan.poses["frame"].to_numpy()
@@ -219,6 +220,7 @@ def estimate(scan: Scan, floor_y, top_y, theta, stride=10, seg_s=6.0, frames=Non
                     A[k, k] += tie * 0.05; A[k + 1, k + 1] += tie * 0.05
                     A[k, k + 1] -= tie * 0.05; A[k + 1, k] -= tie * 0.05
             A += 1.0 / n          # gauge: penalise the mean (sum t)^2
+            A += 1e-3 * np.eye(n)  # weak zero prior: keeps components with no edges solvable
             t = np.linalg.solve(A, b)
         sol[ax] = t
         sol[ax + "_edges"] = len(E)

@@ -1,14 +1,14 @@
 """LiDAR tier: depth + ARKit poses + intrinsics -> per-room plan."""
 from __future__ import annotations
 import numpy as np
-from .io import load_scan, depth_frame_ids
+from .io import load_scan, depth_frame_ids, read_meta
 from .fuse import fuse
 from .planes import find_floor_ceiling, dominant_angle, rotate_xz
 from .walls import extract_walls
 from .freespace import carve
 from .layout import segment
 from .polygon import rectilinear, area
-from .uncertainty import length_sigma, ci, Z95
+from .uncertainty import length_sigma, ci, Z95, TIER_SYSTEMATIC
 from matplotlib.path import Path
 
 
@@ -57,11 +57,16 @@ def run(root, stride=10, voxel=0.015, drift_sigma_per_m=0.0, frames=None, theta=
     """LiDAR tier. drift="on" runs the pose-graph correction (drift.py) before mapping; "off" uses the
     ARKit poses as-is (only for the ablation)."""
     scan = load_scan(root)
+    meta_in = read_meta(root)
+    tier = meta_in.get("tier", "lidar")
+    scale_rel = meta_in.get("scale_sigma_rel")
     # pass 1: global frame (floor height, Manhattan angle) from a sparse fuse
     P, F = fuse(scan, stride=stride * 2, voxel=0.03, frames=frames)
     cam = scan.positions()
     cam_y = float(np.median(cam[:, 1]))
-    fc = find_floor_ceiling(P, cam_y)
+    # mono depth smears planes over ~+-10 cm: coarser bins and a lower mass threshold off-LiDAR
+    fc = (find_floor_ceiling(P, cam_y) if tier == "lidar"
+          else find_floor_ceiling(P, cam_y, bin_=0.03, floor_frac=0.02, ceil_frac=0.015))
     if fc["floor"] is None:
         raise RuntimeError("no floor plane found")
     fy = fc["floor"]["y"]
@@ -70,7 +75,9 @@ def run(root, stride=10, voxel=0.015, drift_sigma_per_m=0.0, frames=None, theta=
     drift_info = {"mode": drift}
     if drift == "on":
         from . import drift as D
-        segs, breaks, info = D.estimate(scan, fy, min(top, fy + 2.2), th, stride=stride, frames=frames)
+        segs, breaks, info = D.estimate(scan, fy, min(top, fy + 2.2), th, stride=stride, frames=frames,
+                                        tol=0.20 if tier == "lidar" else 0.40,
+                                        seg_s=6.0 if tier == "lidar" else 4.0)
         scan.poses = D.corrected_poses(scan, segs, th)
         drift_info.update(info)
         drift_info["max_correction_m"] = float(max(np.hypot(s.dx, s.dz) for s in segs))
@@ -100,7 +107,7 @@ def run(root, stride=10, voxel=0.015, drift_sigma_per_m=0.0, frames=None, theta=
             se_a = pa.se if pa else 0.0
             se_b = pb.se if pb else 0.0
             sup = (pa is not None) and (pb is not None)
-            s = length_sigma(L, se_a, se_b, "lidar", drift_sigma_per_m * L, sup)
+            s = length_sigma(L, se_a, se_b, tier, drift_sigma_per_m * L, sup, scale_rel)
             wall_out.append({"id": f"r{rid}w{i}", "from": [round(a[0], 3), round(a[1], 3)],
                              "to": [round(b[0], 3), round(b[1], 3)], "length_m": ci(L, s),
                              "plane_measured": w is not None, "ends_measured": sup})
@@ -116,7 +123,8 @@ def run(root, stride=10, voxel=0.015, drift_sigma_per_m=0.0, frames=None, theta=
             Hh = cy - fy_
             # partial coverage: the plane may be a soffit/bulkhead rather than the main ceiling
             cov_term = 0.0 if cov >= 0.4 else 0.03 * (0.4 - cov) / 0.25
-            s = float(np.sqrt(cse ** 2 + fse ** 2 + 0.005 ** 2 + (0.004 * Hh) ** 2 + cov_term ** 2))
+            rel = TIER_SYSTEMATIC[tier][1] if scale_rel is None else float(np.hypot(TIER_SYSTEMATIC[tier][1], scale_rel))
+            s = float(np.sqrt(cse ** 2 + fse ** 2 + TIER_SYSTEMATIC[tier][0] ** 2 + (rel * Hh) ** 2 + cov_term ** 2))
             room["ceiling_height_m"] = ci(Hh, s)
             room["ceiling_height_m"]["status"] = "measured" if cov >= 0.4 else "inferred"
             room["ceiling_height_m"]["coverage"] = round(cov, 2)
@@ -131,12 +139,13 @@ def run(root, stride=10, voxel=0.015, drift_sigma_per_m=0.0, frames=None, theta=
     for k, o in enumerate(openings):
         if not o.rooms:
             continue
-        s = float(np.sqrt(2 * 0.01 ** 2 + o.se ** 2 + 0.005 ** 2))
+        rel = TIER_SYSTEMATIC[tier][1] if scale_rel is None else float(np.hypot(TIER_SYSTEMATIC[tier][1], scale_rel))
+        s = float(np.sqrt(2 * 0.01 ** 2 + o.se ** 2 + TIER_SYSTEMATIC[tier][0] ** 2 + (rel * o.width) ** 2))
         ops.append({"id": f"op{k}", "kind": o.kind, "axis": o.axis, "coord": round(o.coord, 3),
                     "span": [round(o.lo, 3), round(o.hi, 3)], "width_m": ci(o.width, s),
                     "rooms": [f"room{r}" for r in o.rooms]})
     adj = sorted({tuple(op["rooms"]) for op in ops if len(op["rooms"]) == 2})
-    meta = {"drift": drift_info, "drift_sigma_per_m": round(drift_sigma_per_m, 5), "tier": "lidar", "frames_used": len(frames) if frames is not None else len(depth_frame_ids(scan, stride)),
+    meta = {"drift": drift_info, "drift_sigma_per_m": round(drift_sigma_per_m, 5), "tier": tier, "input": meta_in, "frames_used": len(frames) if frames is not None else len(depth_frame_ids(scan, stride)),
             "manhattan_theta_deg": round(float(th), 3), "floor_y": round(fy, 4),
             "global_ceiling": fc["ceiling"], "n_walls": len(walls)}
     sl = Q[(Q[:, 1] > fy + 0.3) & (Q[:, 1] < fy + 1.8)][::4][:, [0, 2]]

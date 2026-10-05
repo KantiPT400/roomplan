@@ -32,7 +32,7 @@ def find_floor_ceiling(P, cam_y, bin_=0.01, floor_frac=0.04, ceil_frac=0.03):
         if pk is None:
             continue
         y0, share = pk
-        sel = np.abs(P[:, 1] - y0) < 0.03
+        sel = np.abs(P[:, 1] - y0) < max(0.03, 1.5 * bin_)
         out[name] = {"y": float(np.median(P[sel, 1])), "n": int(sel.sum()), "share": float(share),
                      "std": float(P[sel, 1].std())}
     return out

@@ -46,6 +46,10 @@ def _read_csv(path):
 
 
 def load_scan(root: str, rgb_size=(1920, 1440), depth_size=(256, 192)) -> Scan:
+    meta = read_meta(root)
+    if meta:
+        rgb_size = tuple(meta.get("rgb_size", rgb_size))
+        depth_size = tuple(meta.get("depth_size", depth_size))
     poses = _read_csv(os.path.join(root, "odometry.csv"))
     poses["frame"] = poses["frame"].astype(int)
     K = np.loadtxt(os.path.join(root, "camera_matrix.csv"), delimiter=",")
@@ -65,3 +69,10 @@ def read_depth(scan: Scan, frame: int) -> np.ndarray:
     p = os.path.join(scan.root, "depth", f"{frame:06d}.png")
     d = cv2.imread(p, cv2.IMREAD_UNCHANGED)
     return d.astype(np.float32) / 1000.0
+
+
+def read_meta(root: str) -> dict:
+    """meta.json is written by the video/photo tiers (pseudo-LiDAR folders); absent for real LiDAR."""
+    import json
+    p = os.path.join(root, "meta.json")
+    return json.load(open(p)) if os.path.exists(p) else {}
