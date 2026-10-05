@@ -97,13 +97,31 @@ def segment(free, occ, g: Grid, walls: list[Wall], min_free=2, min_area=1.2, wal
     real = []
     for idx, o in enumerate(gaps):
         m = gap_mask == idx + 1
-        ring = cv2.dilate(m.astype(np.uint8), np.ones((7, 7), np.uint8)) > 0
-        touching = sorted(set(np.unique(rooms[ring & (rooms > 0)]).tolist()))
-        # an opening must have observed free space through it
         thru = (space & m).sum() / max(m.sum(), 1)
-        if thru < 0.5:
+        if thru < 0.5:                       # nothing was seen through it: wall not observed, not an opening
             continue
-        o.rooms = tuple(touching)
+        sides = []
+        for sgn in (-1, 1):
+            # probe 0.15-0.45 m off the gap line on each side
+            off = np.zeros(2)
+            off[0 if o.axis == "x" else 1] = sgn
+            labs, freec = [], 0
+            for dist in (0.15, 0.3, 0.45):
+                for t in np.linspace(o.lo + 0.1, o.hi - 0.1, 5):
+                    p = np.array([o.coord, t]) if o.axis == "x" else np.array([t, o.coord])
+                    q = g.ij(p + off * dist)
+                    if 0 <= q[1] < g.shape[0] and 0 <= q[0] < g.shape[1]:
+                        labs.append(int(rooms[q[1], q[0]])); freec += int(space[q[1], q[0]])
+            nz = [l for l in labs if l > 0]
+            lab = max(set(nz), key=nz.count) if nz else 0
+            sides.append((lab, freec / max(len(labs), 1)))
+        (la, fa), (lb, fb) = sides
+        if la and lb and la != lb:
+            o.rooms = (la, lb)
+        elif (la or lb) and min(fa, fb) >= 0.5 and la != lb:
+            o.rooms = (la or lb,)            # leads to observed space that is not a segmented room
+        else:
+            continue                          # same room on both sides, or blind on one side: phantom
         o.kind = "door" if o.width <= 1.10 else "passage"
         real.append(o)
     # gaps that were not real openings go back to being open (no barrier) - re-label once

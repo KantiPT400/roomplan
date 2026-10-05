@@ -35,14 +35,30 @@ def room_heights(Q, V, floor_g, shrink=0.25, min_pts=300):
             y0 = 0.5 * (e[i] + e[i + 1])
             cl = up[np.abs(up - y0) < 0.03]
             cy = np.median(cl)
-            cl = cl[np.abs(cl - cy) < 0.02]
-            out["ceiling"] = (float(np.median(cl)), float(1.2533 * cl.std() / np.sqrt(max(len(cl) / 20, 4))), len(cl))
+            selc = inside & (np.abs(Q[:, 1] - cy) < 0.02)
+            cl = Q[selc, 1]
+            # coverage: share of 10 cm cells under the shrunk footprint that see this ceiling plane.
+            # A shelf or loft top is a small horizontal patch; a ceiling spans the room.
+            cells = set(map(tuple, np.floor(Q[selc][:, [0, 2]] / 0.1).astype(int).tolist()))
+            room_cells = max(Path(Vs).contains_points(_grid_pts(Vs, 0.1)).sum(), 1)
+            cov = len(cells) / room_cells
+            out["ceiling"] = (float(np.median(cl)), float(1.2533 * cl.std() / np.sqrt(max(len(cl) / 20, 4))),
+                              len(cl), float(min(cov, 1.0)))
     return out
 
 
-def run(root, stride=10, voxel=0.015, drift_sigma_per_m=0.0, frames=None, theta=None):
+def _grid_pts(V, step):
+    lo, hi = V.min(0), V.max(0)
+    xs, zs = np.meshgrid(np.arange(lo[0], hi[0], step) + step / 2, np.arange(lo[1], hi[1], step) + step / 2)
+    return np.stack([xs.ravel(), zs.ravel()], 1)
+
+
+def run(root, stride=10, voxel=0.015, drift_sigma_per_m=0.0, frames=None, theta=None, drift="on"):
+    """LiDAR tier. drift="on" runs the pose-graph correction (drift.py) before mapping; "off" uses the
+    ARKit poses as-is (only for the ablation)."""
     scan = load_scan(root)
-    P, F = fuse(scan, stride=stride, voxel=voxel, frames=frames)
+    # pass 1: global frame (floor height, Manhattan angle) from a sparse fuse
+    P, F = fuse(scan, stride=stride * 2, voxel=0.03, frames=frames)
     cam = scan.positions()
     cam_y = float(np.median(cam[:, 1]))
     fc = find_floor_ceiling(P, cam_y)
@@ -51,6 +67,19 @@ def run(root, stride=10, voxel=0.015, drift_sigma_per_m=0.0, frames=None, theta=
     fy = fc["floor"]["y"]
     top = fc["ceiling"]["y"] if fc["ceiling"] else fy + 2.0
     th = dominant_angle(P, fy + 0.4, min(top, fy + 2.0) - 0.2) if theta is None else theta
+    drift_info = {"mode": drift}
+    if drift == "on":
+        from . import drift as D
+        segs, breaks, info = D.estimate(scan, fy, min(top, fy + 2.2), th, stride=stride, frames=frames)
+        scan.poses = D.corrected_poses(scan, segs, th)
+        drift_info.update(info)
+        drift_info["max_correction_m"] = float(max(np.hypot(s.dx, s.dz) for s in segs))
+        drift_info["yaw_range_deg"] = float(np.ptp([s.yaw for s in segs]))
+        # loop-closure edge residual becomes the per-metre drift term of the error model
+        drift_sigma_per_m = max(drift_sigma_per_m, 0.5 * (info["rms_edge_residual_x_m"] +
+                                                          info["rms_edge_residual_z_m"]) / 5.0)
+    P, F = fuse(scan, stride=stride, voxel=voxel, frames=frames)
+    cam = scan.positions()
     Q, R2 = rotate_xz(P, th)
     walls, ext, lo, res = extract_walls(Q, fy, min(top, fy + 2.2))
     free, occ, g = carve(scan, R2, fy, frames=frames, stride=stride, res=0.03)
@@ -81,13 +110,18 @@ def run(root, stride=10, voxel=0.015, drift_sigma_per_m=0.0, frames=None, theta=
         sA = float(np.sqrt(sum((w["length_m"]["sigma"] * w["length_m"]["value"] / 2) ** 2 for w in wall_out)))
         room = {"id": f"room{rid}", "polygon_m": np.round(V, 3).tolist(), "walls": wall_out,
                 "floor_area_m2": ci(A, sA, 2), "perimeter_m": round(per, 2)}
-        if "ceiling" in hts:
-            cy, cse, cn = hts["ceiling"]
+        if "ceiling" in hts and hts["ceiling"][3] >= 0.15:
+            cy, cse, cn, cov = hts["ceiling"]
             fy_, fse, fn = hts["floor"]
             Hh = cy - fy_
-            s = float(np.sqrt(cse ** 2 + fse ** 2 + 0.005 ** 2 + (0.004 * Hh) ** 2))
+            # partial coverage: the plane may be a soffit/bulkhead rather than the main ceiling
+            cov_term = 0.0 if cov >= 0.4 else 0.03 * (0.4 - cov) / 0.25
+            s = float(np.sqrt(cse ** 2 + fse ** 2 + 0.005 ** 2 + (0.004 * Hh) ** 2 + cov_term ** 2))
             room["ceiling_height_m"] = ci(Hh, s)
-            room["ceiling_height_m"]["status"] = "measured"
+            room["ceiling_height_m"]["status"] = "measured" if cov >= 0.4 else "inferred"
+            room["ceiling_height_m"]["coverage"] = round(cov, 2)
+            if Hh < 2.1:
+                room["ceiling_height_m"]["note"] = "below 2.1 m: may be a loft or storage platform, verify"
         else:
             room["ceiling_height_m"] = {"value": None, "ci95": [2.3, 3.3], "sigma": None,
                                         "status": "not_observed",
@@ -102,9 +136,10 @@ def run(root, stride=10, voxel=0.015, drift_sigma_per_m=0.0, frames=None, theta=
                     "span": [round(o.lo, 3), round(o.hi, 3)], "width_m": ci(o.width, s),
                     "rooms": [f"room{r}" for r in o.rooms]})
     adj = sorted({tuple(op["rooms"]) for op in ops if len(op["rooms"]) == 2})
-    meta = {"tier": "lidar", "frames_used": len(frames) if frames is not None else len(depth_frame_ids(scan, stride)),
+    meta = {"drift": drift_info, "drift_sigma_per_m": round(drift_sigma_per_m, 5), "tier": "lidar", "frames_used": len(frames) if frames is not None else len(depth_frame_ids(scan, stride)),
             "manhattan_theta_deg": round(float(th), 3), "floor_y": round(fy, 4),
             "global_ceiling": fc["ceiling"], "n_walls": len(walls)}
-    debug = {"Q": Q, "walls": walls, "rooms_grid": rooms, "grid": g, "R2": R2, "cam_xz": cam[:, [0, 2]] @ R2.T}
+    sl = Q[(Q[:, 1] > fy + 0.3) & (Q[:, 1] < fy + 1.8)][::4][:, [0, 2]]
+    debug = {"plan_points": sl, "scan": scan, "theta": th, "floor_y": fy, "Q": Q, "walls": walls, "rooms_grid": rooms, "grid": g, "R2": R2, "cam_xz": cam[:, [0, 2]] @ R2.T}
     return {"meta": meta, "rooms": out_rooms, "openings": ops,
             "adjacency": [list(a) for a in adj]}, debug
