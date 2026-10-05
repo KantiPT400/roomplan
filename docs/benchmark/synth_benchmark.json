@@ -29,7 +29,7 @@
    "B_dim1_halfwidth": 0.029,
    "B_ceil_err": -0.001,
    "B_ceil_in_ci": true,
-   "door_err": -0.018,
+   "door_err": -0.023,
    "door_in_ci": true,
    "drift": {
     "max_correction_m": 0.006404173830340917,
@@ -99,7 +99,7 @@
    "B_dim1_halfwidth": 0.0285,
    "B_ceil_err": -0.001,
    "B_ceil_in_ci": true,
-   "door_err": -0.014,
+   "door_err": -0.017,
    "door_in_ci": true,
    "drift": {
     "max_correction_m": 0.007186987287263862,
@@ -169,7 +169,7 @@
    "B_dim1_halfwidth": 0.0285,
    "B_ceil_err": -0.001,
    "B_ceil_in_ci": true,
-   "door_err": -0.019,
+   "door_err": -0.022,
    "door_in_ci": true,
    "drift": {
     "max_correction_m": 0.006421166180186537,
@@ -204,7 +204,7 @@
    "B_dim1_halfwidth": 0.0285,
    "B_ceil_err": 0.002,
    "B_ceil_in_ci": true,
-   "door_err": -0.016,
+   "door_err": -0.019,
    "door_in_ci": true,
    "drift": {
     "max_correction_m": 0.0060675962543389065,
@@ -237,14 +237,14 @@
   "found": 6,
   "of": 6,
   "abs_err_m": [
-   0.018,
+   0.023,
    0.008,
-   0.014,
+   0.017,
    0.01,
-   0.019,
-   0.016
+   0.022,
+   0.019
   ],
-  "within_2cm": 6,
+  "within_2cm": 4,
   "ci95_coverage": 1.0
  },
  "rooms_found": [

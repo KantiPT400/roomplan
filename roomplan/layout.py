@@ -128,13 +128,14 @@ def segment(free, occ, g: Grid, walls: list[Wall], min_free=2, min_area=1.2, wal
     return rooms, real, barrier, space
 
 
-def refine_jambs(o: Opening, Q, floor_y, face_tol=0.05, win=0.35, band=(0.3, 1.8)):
+def refine_jambs(o: Opening, Q, floor_y, face_tol=0.12, win=0.35, band=(0.3, 1.8)):
     """Re-measure an opening's edges from raw points instead of 4 cm wall cells.
 
     Wall cells next to a door frame are seen less and fall below the wall test, so cell-based wall ends stop
     short of the frame and openings came out ~10 cm too wide on the synthetic flat (1.00 vs 0.90 m). Here each
     jamb is the extreme along-wall position of points on the wall plane next to the gap (2nd/98th
-    percentile), measured at door-handle height.
+    percentile), measured at door-handle height. The band (+-12 cm) covers both faces of the wall and the
+    reveal: a gap paired from pieces on opposite faces has its coordinate between them.
     """
     ax = 0 if o.axis == "x" else 2      # plane normal axis in Q
     al = 2 if o.axis == "x" else 0      # along-wall axis
