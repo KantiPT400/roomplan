@@ -54,12 +54,16 @@ end-to-end on a rendered flat with exact ground truth).
 | real data | two captures of one apartment: 8/30 wall planes within 1 cm (median 2.7 cm), door widths 2/7 within 2 cm; the 1 cm repeatability gate fails | footprint 0.96 x LiDAR, rooms under-segmented (7 vs 11) | partial (largest registered stretch, 43 of 223 frames) |
 | staged damage | crack 0.62 m (truth 0.60), stain 0.141 m^2 (truth 0.114), 0 false alarms on two clean captures | not run | not run |
 | drift | loop residual 11.4 -> 2.1 cm with the pose graph | n/a | n/a |
+| too little input (2 photos of a room, a 5 s clip) | partial plan | single-view room estimate, 30% sigma | single-view room estimate, 30% sigma |
 
 ## Reproduce every reported number
 
 ```bash
 bash scripts/reproduce.sh /path/to/sample_data         # folders single_room/, single_scan_floor_only/, single_scan_with_ceiling/
 ```
+
+~55 min on a 2-core CPU. On a fresh clone it regenerated every LiDAR, drift, synthetic and staged-damage number
+bit for bit; the photo/video numbers need the versions in `requirements-lock.txt` (report section 5).
 
 See [`docs/report.md`](docs/report.md) for what each number means and its limits. Fix loop:
 [`docs/fix_loop_declaration.md`](docs/fix_loop_declaration.md) (declaration, committed before the fix) and
