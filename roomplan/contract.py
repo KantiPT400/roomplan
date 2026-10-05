@@ -16,8 +16,11 @@ def finalize(plan, capture, tier, dbg, capture_dir, out_dir, damage=True):
         try:
             from .damage import detect
             res["damage"], res["concealed_damage_flags"] = detect(plan, dbg, capture_dir, tier, out_dir)
-        except ImportError:
-            pass
+        except Exception as e:      # damage is one stage of several: never lose the plan because of it
+            import traceback
+            traceback.print_exc()
+            plan["meta"]["damage_error"] = repr(e)
+            print(f"damage detection failed ({e!r}); plan written without damage regions")
     from .scope import scope_items
     res["scope"] = scope_items(res)
     res["meta"] = plan["meta"]

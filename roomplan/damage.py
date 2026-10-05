@@ -106,6 +106,7 @@ def detect(plan, dbg, capture_dir, tier, out_dir, wall_tol=0.03, min_len=0.8):
         frames = _frames_lidar(scan)
         video = os.path.join(capture_dir, "rgb.mp4")
         if not os.path.exists(video):
+            plan["meta"]["damage_detector"] = {"skipped": "no rgb.mp4 in the capture folder (colour is needed)"}
             return [], []
         fdir = os.environ.get("ROOMPLAN_FRAMES_DIR")   # evaluation hook: pre-rendered frames (inject_damage.py)
         imgs = (_decode(video, frames, os.path.join(work, "frames")) if not fdir else
