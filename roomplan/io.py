@@ -1,4 +1,4 @@
-"""Loading Record3D-style LiDAR scans (rgb.mp4, depth/*.png, odometry.csv, imu.csv, camera_matrix.csv).
+"""Loading Stray Scanner LiDAR scans (rgb.mp4, depth/*.png, odometry.csv, imu.csv, camera_matrix.csv).
 
 Conventions (verified empirically, see docs/conventions.md):
   * odometry.csv gives camera-to-world poses; quaternion order is (qx, qy, qz, qw).

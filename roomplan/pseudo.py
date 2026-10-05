@@ -154,7 +154,7 @@ def _cam_to_world_pose(frag, n, G, yaw_R, offset):
 
 
 def build(frags, image_dir, out_dir, cache, tier, fps=None, prior=CAM_HEIGHT_PRIOR, log=print):
-    """Merge fragments and write a Record3D-style folder. Returns a summary dict."""
+    """Merge fragments and write a Stray Scanner folder. Returns a summary dict."""
     os.makedirs(os.path.join(out_dir, "depth"), exist_ok=True)
     prepared = []
     for fi, fr in enumerate(frags):
