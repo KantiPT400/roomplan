@@ -4,7 +4,7 @@ import pytest
 
 jsonschema = pytest.importorskip("jsonschema")
 SCHEMA = json.load(open(os.path.join(os.path.dirname(__file__), "..", "roomplan", "schema.json")))
-PLANS = glob.glob(os.environ.get("ROOMPLAN_OUT", "out") + "/*/plan.json")
+PLANS = glob.glob(os.environ.get("ROOMPLAN_OUT", "out") + "/**/plan.json", recursive=True)
 
 
 @pytest.mark.skipif(not PLANS, reason="no outputs yet: run python -m roomplan on a capture first")

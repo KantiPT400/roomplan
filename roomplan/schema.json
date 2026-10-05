@@ -60,7 +60,7 @@
       "type": "object",
       "required": ["id", "surface", "class", "extent_m2", "score"],
       "properties": {
-        "id": {"type": "string"}, "surface": {"type": "string"}, "room": {"type": "string"},
+        "id": {"type": "string"}, "surface": {"type": "string"}, "room": {"type": ["string", "null"]},
         "class": {"enum": ["stain_discoloration", "crack", "mould_like", "surface_loss"]},
         "extent_m2": {"$ref": "#/$defs/measure"},
         "bbox_on_surface_m": {"type": "array"},
