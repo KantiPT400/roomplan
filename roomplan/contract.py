@@ -1,6 +1,5 @@
 """Assemble the published output contract (schema.json) from a tier's plan."""
 from __future__ import annotations
-import numpy as np
 
 
 def finalize(plan, capture, tier, dbg, capture_dir, out_dir, damage=True):

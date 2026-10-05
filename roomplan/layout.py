@@ -5,7 +5,7 @@ doorway-sized gaps between walls are closed with "opening" barriers that remembe
 regions they join. Each closed gap therefore yields both an opening and an adjacency edge.
 """
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import numpy as np
 import cv2
 from scipy import ndimage

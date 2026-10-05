@@ -8,7 +8,7 @@ from .walls import extract_walls
 from .freespace import carve
 from .layout import segment
 from .polygon import rectilinear, area
-from .uncertainty import length_sigma, ci, Z95, TIER_SYSTEMATIC
+from .uncertainty import length_sigma, ci, TIER_SYSTEMATIC
 from matplotlib.path import Path
 
 

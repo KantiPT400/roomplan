@@ -64,7 +64,11 @@ class View:
             self.floor_mask = np.zeros((self.h, self.w), bool)
             self.floor_mask[int(0.65 * self.h):] = True
         mask = (~self.floor_mask).astype(np.uint8) * 255
-        self.kp, self.des = SIFT.detectAndCompute(g, mask)
+        kp, self.des = SIFT.detectAndCompute(g, mask)
+        # keep only what registration needs: keypoint positions as an array, no full-resolution mask. A 4-minute
+        # clip at 6 fps is ~1400 views; KeyPoint objects + the mask cost ~2 MB per view on top of descriptors.
+        self.pts = np.float32([k.pt for k in kp]).reshape(-1, 2)
+        self.floor_mask = None
 
 
 SIFT = cv2.SIFT_create(nfeatures=4000, contrastThreshold=0.02)
@@ -78,14 +82,14 @@ def _depth_at(v: View, pts):
 
 def register(a: View, b: View):
     """Relative pose X_b = R X_a + t (metres, a's scale). None if unreliable."""
-    if a.des is None or b.des is None or len(a.kp) < 20 or len(b.kp) < 20:
+    if a.des is None or b.des is None or len(a.pts) < 20 or len(b.pts) < 20:
         return None
     m = cv2.BFMatcher(cv2.NORM_L2).knnMatch(a.des, b.des, k=2)
     good = [x[0] for x in m if len(x) == 2 and x[0].distance < 0.8 * x[1].distance]
     if len(good) < MIN_E_INL:
         return None
-    pa = np.float64([a.kp[g.queryIdx].pt for g in good])
-    pb = np.float64([b.kp[g.trainIdx].pt for g in good])
+    pa = a.pts[[g.queryIdx for g in good]].astype(np.float64).reshape(-1, 2)
+    pb = b.pts[[g.trainIdx for g in good]].astype(np.float64).reshape(-1, 2)
     na = cv2.undistortPoints(pa.reshape(-1, 1, 2), a.K, None).reshape(-1, 2)
     nb = cv2.undistortPoints(pb.reshape(-1, 1, 2), b.K, None).reshape(-1, 2)
     E, mask = cv2.findEssentialMat(na, nb, np.eye(3), method=cv2.RANSAC, prob=0.999,

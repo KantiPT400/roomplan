@@ -9,7 +9,7 @@ Axis-aligned runs of wall cells become wall segments, whose plane coordinate is 
 1 cm precision from the raw points (median of the face), with a standard error per wall.
 """
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import numpy as np
 import cv2
 

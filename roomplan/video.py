@@ -90,7 +90,6 @@ def choose_rotation(img_dir, names, n_probe=8):
 
 def _reuse(out_dir):
     """--reuse: geometry only, on the pseudo-LiDAR folder a previous run of this capture already wrote."""
-    import json as _j
     p = os.path.join(out_dir, "work", "pseudo")
     return p if os.environ.get("ROOMPLAN_REUSE") and os.path.exists(os.path.join(p, "meta.json")) else None
 

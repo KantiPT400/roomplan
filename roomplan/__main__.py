@@ -9,7 +9,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import sys
 import time
 
 
@@ -94,7 +93,6 @@ def main(argv=None):
     with open(os.path.join(out, "plan.json"), "w") as f:
         json.dump(plan, f, indent=1)
     from .render import render
-    import numpy as np
     pts = dbg.get("plan_points")
     render(plan, os.path.join(out, "plan.png"), title=f"{name} - {tier} tier (95% intervals)", points=pts)
     print(f"{name}: {len(plan['rooms'])} rooms, {len(plan['openings'])} openings, "
