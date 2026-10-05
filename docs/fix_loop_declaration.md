@@ -46,3 +46,9 @@ Predicted after the fix (same photo set, same benchmark script):
 We expect the +-8% footprint gate itself to remain at risk: metric scale in this tier comes from the
 1.40 +- 0.07 m camera-height prior (5% at 1 sigma), and the photo set is cut from a walkthrough that was not
 shot for overlapping stills.
+
+## Process note
+Commit `b7fe7ff` (this declaration) accidentally also contained the fix's code in `roomplan/mvreg.py`
+(a `git stash` of it failed silently). The code had not been run when the declaration was written and no
+after-numbers existed. Commit after it backs the code out again so that the fix lands in its own commit,
+together with its after run: `before` = `1c92fa8`, `after` = the "Fix loop: ..." commit.
