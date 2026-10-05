@@ -24,6 +24,7 @@ class Wall:
     std: float = 0.0     # spread of the face (m)
     se: float = 0.0      # standard error of coord (m)
     facing: int = 0      # +1/-1: side (along the normal axis) the cameras saw this face from; 0 unknown
+    top: float = None    # 97th percentile height of the face points (world y), when computed
 
     @property
     def length(self):

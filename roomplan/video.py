@@ -23,10 +23,10 @@ from .singleview import calibrate
 from .mono import disparity
 from .lidar import run as run_geometry
 
-FPS = 3
+FPS = 6
 WIDTH = 960
 FOCAL_FRAC = 0.80        # iPhone 1x video, focal / long side (prior; sample capture: 0.833)
-NEIGHBOURS = 4
+NEIGHBOURS = 6
 
 
 def find_video(path):
