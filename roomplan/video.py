@@ -55,10 +55,16 @@ def _K(w, h):
 
 
 def choose_rotation(img_dir, names, n_probe=8):
+    """Upright rotation for the clip: the one in which the detected floor sits lowest in the image.
+
+    'Floor found at all' is not decisive: a walkthrough pitched down 30 deg sees floor in every rotation.
+    In an upright image floor pixels concentrate at the bottom (mean row ~0.7-0.8 of the height); upside
+    down at the top; sideways around the middle.
+    """
     probe = names[:: max(1, len(names) // n_probe)][:n_probe]
     score = {}
     for deg, code in ROTS.items():
-        ok = 0
+        rows = []
         for nm in probe:
             img = cv2.imread(os.path.join(img_dir, nm))
             if code is not None:
@@ -67,9 +73,19 @@ def choose_rotation(img_dir, names, n_probe=8):
             d = cv2.resize(disparity(img), (w // 4, h // 4), interpolation=cv2.INTER_AREA)
             K = _K(w, h); K[:2] /= 4
             c = calibrate(d, K)
-            ok += c is not None and c["floor_share"] > 0.1
-        score[deg] = ok
-    return max(score, key=score.get), score
+            if c is None:
+                continue
+            from .singleview import depth_from
+            z = depth_from(d, c)
+            hh, ww = z.shape
+            vv, uu = np.mgrid[0:hh, 0:ww]
+            P = np.stack([(uu - K[0, 2]) / K[0, 0] * z, (vv - K[1, 2]) / K[1, 1] * z, z], -1)
+            yg = (P @ c["Rg"].T)[..., 1]
+            fl = yg < yg.min() + 0.15 * (np.percentile(yg, 95) - yg.min()) + 0.1
+            if fl.any():
+                rows.append(vv[fl].mean() / hh)
+        score[deg] = float(np.mean(rows)) if rows else 0.0
+    return max(score, key=score.get), {k: round(v, 2) for k, v in score.items()}
 
 
 def run(capture, out_dir, fps=FPS, log=print):

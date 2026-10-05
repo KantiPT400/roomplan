@@ -25,7 +25,7 @@ from .singleview import calibrate, depth_from
 from .pseudo import CAM_HEIGHT_PRIOR
 
 DS = 4
-MIN_E_INL = 40   # was 25; at >= 40 inliers 50% of registrations were right vs 31% overall (truth check)
+MIN_E_INL = 25   # 40 was tried: more precise edges (50% right vs 31%) but the sparse photo graph fell apart (43 -> 8)
 
 
 class View:
@@ -241,9 +241,15 @@ def _layout_core(views, edges, log=print, first=False):
                 bad[v_] = bad.get(v_, 0) + (res > 15)
     hubs = {v_ for v_ in tot if tot[v_] >= 4 and bad[v_] / tot[v_] > 0.5}
     if hubs:
-        log(f"hub suppression: dropping edges of {len(hubs)} views ({sorted(views[h].name for h in hubs)[:5]})")
-        edges = [(a_, b_, r) for a_, b_, r in edges if a_ not in hubs and b_ not in hubs]
-        return layout_from_edges(views, edges, log)
+        log(f"hub suppression: candidate views {sorted(views[h].name for h in hubs)[:5]}")
+        e2 = [(a_, b_, r) for a_, b_, r in edges if a_ not in hubs and b_ not in hubs]
+        alt = layout_from_edges(views, e2, log)
+        # only accept when the mapped component does not shrink by more than 20%: a hub can also be the
+        # only link between rooms, and on sparse photo sets dropping it split the graph (43 -> 8 photos)
+        if len(alt[3][0]) >= 0.8 * len(comps[0]):
+            log("hub suppression: accepted")
+            return alt
+        log(f"hub suppression: rejected (main component {len(comps[0])} -> {len(alt[3][0])})")
     return C, c, comp_of, comps, edges
 
 

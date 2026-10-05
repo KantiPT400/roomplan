@@ -1,0 +1,40 @@
+{
+ "capture": "with_ceiling",
+ "manhattan_deg": 27.615,
+ "off": {
+  "loop_residual": {
+   "dx_m": 0.0031,
+   "dz_m": 0.114,
+   "yaw_deg": 0.04,
+   "evidence_x": 0.81,
+   "evidence_z": 0.53
+  },
+  "wall_planes": 125,
+  "wall_sharpness_m": 0.0304,
+  "ghost_walls": 1
+ },
+ "on": {
+  "loop_residual": {
+   "dx_m": 0.017,
+   "dz_m": 0.0131,
+   "yaw_deg": 0.286,
+   "evidence_x": 1.0,
+   "evidence_z": 0.45
+  },
+  "pose_graph": {
+   "yaw_measured_range_deg": 0.4046215072297497,
+   "yaw_corrected": false,
+   "n_segments": 36,
+   "jumps": 0,
+   "edges_x": 100,
+   "edges_z": 71,
+   "rms_edge_residual_x_m": 0.014196314618182408,
+   "rms_edge_residual_z_m": 0.027042120501278084
+  },
+  "max_correction_m": 0.1304,
+  "yaw_range_deg": 0.0,
+  "wall_planes": 105,
+  "wall_sharpness_m": 0.025,
+  "ghost_walls": 3
+ }
+}

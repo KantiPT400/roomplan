@@ -191,7 +191,12 @@ def estimate(scan: Scan, floor_y, top_y, theta, stride=10, seg_s=6.0, frames=Non
             sg.w_yaw = float(min(sl.sum(), 4000)) / 4000.0
         fl = P[np.abs(P[:, 1] - floor_y) < 0.08, 1]
         sg.dy = float(np.median(fl) - floor_y) if len(fl) > 200 else 0.0
-    yaw_s = _smooth([s.yaw for s in segs], [s.w_yaw for s in segs], tie * 2, breaks)
+    # Heading is NOT corrected. Per-segment "Manhattan" yaw mixes drift with real non-squareness of walls
+    # (a wall 0.5 deg off square shifts the estimate of every segment that mostly sees it); applying it bent
+    # the map: loop yaw residual 0.04 deg uncorrected -> 0.45 deg corrected on with_ceiling. The measured
+    # per-segment yaw is kept for reporting only.
+    yaw_meas = _smooth([s.yaw for s in segs], [s.w_yaw for s in segs], tie * 40, breaks)
+    yaw_s = np.zeros(n)
     dy_s = _smooth([s.dy for s in segs], [1.0] * n, tie * 2, breaks)
     sw = [_seg_walls(scan, sg.frames, floor_y, top_y, theta, (yaw_s[k], 0, 0, dy_s[k]))
           for k, sg in enumerate(segs)]
@@ -227,7 +232,8 @@ def estimate(scan: Scan, floor_y, top_y, theta, stride=10, seg_s=6.0, frames=Non
         sol[ax + "_resid"] = float(np.sqrt(np.mean([(t[j] - t[i] - d) ** 2 for i, j, d, w in E]))) if E else 0.0
     for k, sg in enumerate(segs):
         sg.yaw, sg.dx, sg.dz, sg.dy = float(yaw_s[k]), float(sol["x"][k]), float(sol["z"][k]), float(dy_s[k])
-    info = {"n_segments": n, "jumps": int(sum(bool(v) for v in breaks.values())),
+        sg.yaw_measured = float(yaw_meas[k])
+    info = {"yaw_measured_range_deg": float(np.ptp(yaw_meas)), "yaw_corrected": False, "n_segments": n, "jumps": int(sum(bool(v) for v in breaks.values())),
             "edges_x": sol["x_edges"], "edges_z": sol["z_edges"],
             "rms_edge_residual_x_m": sol["x_resid"], "rms_edge_residual_z_m": sol["z_resid"]}
     return segs, breaks, info
