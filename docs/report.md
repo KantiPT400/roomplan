@@ -43,8 +43,8 @@ effective sample per 4 cm of wall (points are spatially correlated). **Rooms** a
 rays, cut by walls and by doorway-sized gaps between walls (0.55-1.40 m, jambs >= 0.5 m long); a gap is an
 opening only if free space is observed through it and different space lies on each side. Each opening is thus
 also an adjacency edge. An opening into observed space that is not a room must have >= 0.7 m of free space
-beyond it; shallower "openings" were niches, alcoves and a window bay (section 5). Door jambs are re-measured from raw points at handle height (cell-based ends were
-biased by up to 10 cm). **Room polygons** are rectilinear, and each edge snaps to a measured wall plane only if
+beyond it; shallower "openings" were niches, alcoves and a window bay (section 5). Door jambs are re-measured
+from raw points at handle height (cell-based ends were biased by up to 10 cm). **Room polygons** are rectilinear, and each edge snaps to a measured wall plane only if
 that plane was seen from inside the room (otherwise it is the neighbour's face, one wall thickness away).
 Edges with no supporting plane (furniture-bounded, unseen) are drawn grey and carry +-10 cm extra sigma.
 **Ceilings** are per room; a plane must cover >= 15% of the room footprint (shelf and loft tops do not), and a
@@ -63,7 +63,7 @@ loop closure; tilt to the ceiling once per room; floor in every photo; ~30 deg p
 
 **Video/photo metric scale** comes from the camera height: the floor plane is found in each image's mono depth
 (lowest large near-horizontal plane; planarity fixes the disparity shift), and the camera is assumed to be
-1.40 +- 0.07 m above it (calibrated on the three sample captures: 1.41, 1.46 m; sigma covers other operators).
+1.40 +- 0.07 m above it (calibrated on the sample captures, whose LiDAR gives 1.41 and 1.46 m; sigma covers other operators).
 That 5% (1 sigma) is propagated into every video/photo interval. Registration uses two-view essential matrices
 with the floor masked out (repetitive tiles produced most false matches; section 6), translation length from
 metric depth, then a global solve: headings averaged over all edges, positions by robust least squares with all
@@ -166,8 +166,9 @@ we designed against.
 2-core VM) regenerated every LiDAR, drift, synthetic and staged-damage number bit for bit
 (`docs/benchmark/benchmark_fresh_clone.json`). That install pulled onnxruntime 1.30 instead of 1.29; its mono
 depth differs by ~2e-7 (relative), and the photo tier then merged three rooms into one (7 -> 5 rooms, footprint
-0.958 -> 0.937) and the video tier gave 3 rooms (footprint 0.74). The registrations were the same; one short wall
-segment passed the wall test in one run and not the other. So the photo/video room partition is not stable under
+0.958 -> 0.937) and the video tier gave 3 rooms (footprint 0.74). The registrations had the same structure (109
+pairs, components 43 + 2); the two photo plans differ mainly by one wall segment, present in one and missing in
+the other, which merged three rooms. So the photo/video room partition is not stable under
 tiny perturbations, which is the same weakness as their failing room counts. `requirements-lock.txt` pins the
 versions behind the reported numbers.
 
@@ -193,7 +194,9 @@ disagrees with the target's own depth. **Result**: global solve went from self-c
 0 -> 1 and footprint 0.54 -> 0.52: **the prediction was badly wrong**. Post-mortem: a second false-match source
 (one photo with a repetitive pattern acting as a hub) and, more importantly, a downstream stage we had not
 checked: mono-depth walls rarely passed the wall test. The partial-wall rule added afterwards (section 1) came
-from the synthetic benchmark; hub suppression is in, guarded so it cannot split the graph.
+from the synthetic benchmark; hub suppression is in, guarded so it cannot split the graph. Acting on the
+post-mortem (coarser wall cells for mono depth, rooms grown into space seen once; commit e283758) brought the
+photo footprint to 0.958 and rooms to 7 of 11; the room structure still fails.
 
 ## 7. Known failure modes (and what the output does about them)
 * **Full-height furniture** (wardrobes, fridges) is a wall to geometry; room edges may land on its front. Seen in
