@@ -13,8 +13,35 @@ import sys
 import time
 
 
+def _is_lidar(path):
+    return os.path.isdir(os.path.join(path, "depth")) and os.path.exists(os.path.join(path, "odometry.csv"))
+
+
+def resolve_capture(path, max_depth=3):
+    """Accept the folder the user has, not only the exact capture folder: a Stray Scanner export unzipped as
+    single_room/c00a170fe1/ is found when `single_room` is given. Without this, a parent folder of a LiDAR
+    capture looks like 'a folder of sub-folders' and would be run as photos (its depth PNGs as pictures)."""
+    if not os.path.isdir(path) or _is_lidar(path):
+        return path
+    found = []
+    for root, dirs, _ in os.walk(path, followlinks=True):
+        if root[len(path):].count(os.sep) >= max_depth:
+            dirs[:] = []
+            continue
+        if _is_lidar(root):
+            found.append(root)
+            dirs[:] = []
+    if len(found) == 1:
+        print(f"LiDAR capture found inside the folder: {found[0]}")
+        return found[0]
+    if len(found) > 1:
+        raise SystemExit("several LiDAR captures in this folder; run one command per capture:\n  " +
+                         "\n  ".join(sorted(found)))
+    return path
+
+
 def detect_tier(path):
-    if os.path.isdir(os.path.join(path, "depth")) and os.path.exists(os.path.join(path, "odometry.csv")):
+    if _is_lidar(path):
         return "lidar"
     exts_v = (".mp4", ".mov", ".m4v")
     if os.path.isfile(path) and path.lower().endswith(exts_v):
@@ -40,10 +67,14 @@ def main(argv=None):
     ap.add_argument("--reuse", action="store_true",
                     help="video/photo: reuse the registration of a previous run (geometry only)")
     a = ap.parse_args(argv)
+    if not os.path.exists(a.capture):
+        raise SystemExit(f"no such file or folder: {a.capture}")
+    name = os.path.basename(os.path.normpath(a.capture))
+    if a.tier in ("auto", "lidar"):
+        a.capture = resolve_capture(a.capture)
     tier = detect_tier(a.capture) if a.tier == "auto" else a.tier
     if a.reuse:
         os.environ["ROOMPLAN_REUSE"] = "1"
-    name = os.path.basename(os.path.normpath(a.capture))
     out = os.path.join(a.out, f"{name}_{tier}" + ("" if a.drift == "on" else "_driftoff"))
     os.makedirs(out, exist_ok=True)
     t0 = time.time()
