@@ -89,8 +89,17 @@ def run(root, stride=10, voxel=0.015, drift_sigma_per_m=0.0, frames=None, theta=
     cam = scan.positions()
     Q, R2 = rotate_xz(P, th)
     walls, ext, lo, res = extract_walls(Q, fy, min(top, fy + 2.2))
+    # which side each wall face was seen from: a room edge may only snap to a face seen from inside it
+    from .drift import wall_facing
+    posd = dict(zip(scan.poses["frame"].to_numpy(), scan.positions()))
+    cam_pts = np.array([posd[f] for f in F])[:, [0, 2]] @ R2.T
+    for w, fc_ in zip(walls, wall_facing(walls, Q, cam_pts)):
+        w.facing = fc_
     free, occ, g = carve(scan, R2, fy, frames=frames, stride=stride, res=0.03)
     rooms, openings, barrier, space = segment(free, occ, g, walls)
+    from .layout import refine_jambs
+    for o in openings:
+        refine_jambs(o, Q, fy)
     out_rooms = []
     for rid in range(1, rooms.max() + 1):
         edges, V = rectilinear(rooms == rid, g, walls)

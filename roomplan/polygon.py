@@ -76,9 +76,22 @@ def rectilinear(mask, g: Grid, walls: list[Wall], eps_px=2.5, min_edge=0.15, sna
     for i, e in enumerate(edges):
         a, b = V[i], V[(i + 1) % len(V)]
         span = sorted((a[1], b[1])) if e[0] == "x" else sorted((a[0], b[0]))
+        # interior side of this edge: probe 10 cm either side of its midpoint in the room mask
+        mid = (a + b) / 2
+        k = 0 if e[0] == "x" else 1
+        inside_sign = 0
+        for sgn in (1, -1):
+            p = mid.copy(); p[k] += sgn * 0.10
+            q = g.ij(p)
+            if 0 <= q[1] < mask.shape[0] and 0 <= q[0] < mask.shape[1] and mask[q[1], q[0]]:
+                inside_sign = sgn
+                break
         best, bs = None, 0
         for w in walls:
             if w.axis != e[0] or abs(w.coord - e[1]) > snap:
+                continue
+            # a face seen from the other side belongs to the neighbouring room (wall thickness away)
+            if inside_sign and getattr(w, "facing", 0) and w.facing != inside_sign:
                 continue
             ov = min(w.hi, span[1]) - max(w.lo, span[0])
             score = ov - 2 * abs(w.coord - e[1])

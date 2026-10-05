@@ -126,3 +126,26 @@ def segment(free, occ, g: Grid, walls: list[Wall], min_free=2, min_area=1.2, wal
         real.append(o)
     # gaps that were not real openings go back to being open (no barrier) - re-label once
     return rooms, real, barrier, space
+
+
+def refine_jambs(o: Opening, Q, floor_y, face_tol=0.05, win=0.35, band=(0.3, 1.8)):
+    """Re-measure an opening's edges from raw points instead of 4 cm wall cells.
+
+    Wall cells next to a door frame are seen less and fall below the wall test, so cell-based wall ends stop
+    short of the frame and openings came out ~10 cm too wide on the synthetic flat (1.00 vs 0.90 m). Here each
+    jamb is the extreme along-wall position of points on the wall plane next to the gap (2nd/98th
+    percentile), measured at door-handle height.
+    """
+    ax = 0 if o.axis == "x" else 2      # plane normal axis in Q
+    al = 2 if o.axis == "x" else 0      # along-wall axis
+    h = Q[:, 1] - floor_y
+    on = (np.abs(Q[:, ax] - o.coord) < face_tol) & (h > band[0]) & (h < band[1])
+    s = Q[on, al]
+    lo_side = s[(s > o.lo - win) & (s < o.lo + 0.10)]
+    hi_side = s[(s > o.hi - 0.10) & (s < o.hi + win)]
+    new_lo = float(np.percentile(lo_side, 98)) if len(lo_side) > 30 else o.lo
+    new_hi = float(np.percentile(hi_side, 2)) if len(hi_side) > 30 else o.hi
+    if 0.4 < new_hi - new_lo < o.hi - o.lo + 0.15:
+        o.lo, o.hi = new_lo, new_hi
+        o.refined = True
+    return o

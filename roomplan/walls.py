@@ -1,7 +1,9 @@
 """Manhattan wall extraction from a gravity-aligned point cloud.
 
-A wall is the thing that occupies most of the height between floor and ceiling; furniture and
-clutter only occupy a few height bins. We therefore build a 2D map of *vertical extent* (how many
+A wall is the thing that occupies most of the height between floor and ceiling (>= 60% of 10 cm bins), or
+at least shows >= 1.1 m of continuous vertical surface where the capture only saw part of it; furniture and
+clutter below ~1 m (tables, sofas, counters) do neither. Full-height furniture (wardrobes, fridges) does
+both and is indistinguishable from a wall by geometry alone (see report: failure modes). We therefore build a 2D map of *vertical extent* (how many
 10 cm height bins are occupied per 4 cm cell) and keep high-extent cells as wall evidence.
 Axis-aligned runs of wall cells become wall segments, whose plane coordinate is then refined at
 1 cm precision from the raw points (median of the face), with a standard error per wall.
@@ -21,6 +23,7 @@ class Wall:
     n: int = 0           # supporting points
     std: float = 0.0     # spread of the face (m)
     se: float = 0.0      # standard error of coord (m)
+    facing: int = 0      # +1/-1: side (along the normal axis) the cameras saw this face from; 0 unknown
 
     @property
     def length(self):
@@ -46,7 +49,17 @@ def extent_map(Q, floor_y, top_y, res=0.04, bin_h=0.10, margin=0.15):
     hb = np.digitize(Q[:, 1], bins) - 1
     ok = (hb >= 0) & (hb < nb)
     occ[ij[ok, 1], ij[ok, 0], hb[ok]] = True
-    return occ.sum(2) / max(nb, 1), lo, res
+    frac = occ.sum(2) / max(nb, 1)
+    # longest vertical run of occupied bins (1-bin gaps bridged), in metres: a wall seen only partly
+    # (upper half only, say) is still a tall continuous surface; tables, sofas, counters are not
+    closed = occ.copy()
+    closed[..., 1:-1] |= occ[..., :-2] & occ[..., 2:]
+    cur = np.zeros(frac.shape, np.int16); run = np.zeros(frac.shape, np.int16)
+    for b in range(nb):
+        cur = (cur + 1) * closed[..., b]
+        run = np.maximum(run, cur)
+    extent_map.last_run_m = run * bin_h
+    return frac, lo, res
 
 
 def _runs(b):
@@ -55,9 +68,9 @@ def _runs(b):
     return list(zip(np.where(d == 1)[0], np.where(d == -1)[0]))
 
 
-def extract_walls(Q, floor_y, top_y, res=0.04, frac=0.6, min_len=0.35, gap=0.12, face_tol=0.06):
+def extract_walls(Q, floor_y, top_y, res=0.04, frac=0.6, min_len=0.35, gap=0.12, face_tol=0.06, min_run=1.1):
     ext, lo, res = extent_map(Q, floor_y, top_y, res)
-    W = (ext >= frac).astype(np.uint8)
+    W = ((ext >= frac) | (extent_map.last_run_m >= min_run)).astype(np.uint8)
     # bridge single-cell holes in the wall evidence
     walls = []
     for axis in ("x", "z"):

@@ -7,7 +7,8 @@ known flat: two rooms (A 4.20 x 3.35 m, B 2.50 x 3.35 m) joined by a 0.90 m door
 
 Depth (256x192, mm, 16-bit PNG) is ray-cast from a camera that walks a loop through both rooms at ~1.45 m,
 pitching between -35 and +40 deg (it looks at the ceiling once per room, as the protocol asks), with
-  * depth noise sigma = 4 mm + 0.6% of range, 1 mm quantisation, ~0.5% dropped pixels;
+  * depth noise: smooth per-frame bias field (0.4% of range, 1 sigma) + pixel jitter 2 mm + 0.2% of range,
+    1 mm quantisation, ~0.5% dropped pixels;
   * pose drift: a slow random walk (~1.5 cm and ~0.25 deg per minute on average) added to the written poses.
 Intrinsics are those of the sample captures (fx = 1600 px at 1920 x 1440).
 
@@ -110,7 +111,11 @@ for i in range(n):
     pos = np.array([xz[i, 0], height[i], xz[i, 1]])
     d = raycast(pos, rays_cam @ Rc.T)
     z = d * rays_cam[..., 2]
-    z = z + rng.normal(0, 0.004 + 0.006 * z)
+    # iPhone LiDAR noise is mostly a smooth per-frame bias field (the 256x192 map is upsampled from a sparse
+    # 24x24 dot pattern) plus a few mm of pixel jitter; independent ~2 cm per-pixel noise would turn every
+    # wall into a fuzzy 10 cm slab, which real captures do not show.
+    field = cv2.resize(rng.normal(0, 1, (6, 8)).astype(np.float32), (W, Hh), interpolation=cv2.INTER_CUBIC)
+    z = z * (1 + 0.004 * field) + rng.normal(0, 0.002 + 0.002 * z)
     z[rng.random(z.shape) < 0.005] = 0
     z[~np.isfinite(z) | (z > 6.0)] = 0
     cv2.imwrite(os.path.join(a.out, "depth", f"{i:06d}.png"), np.clip(np.round(z * 1000), 0, 65535).astype(np.uint16))
