@@ -33,7 +33,7 @@ RULES = {
                       "the wall or rising damp behind the skirting",
     "both_faces": "damage on both faces of the same wall (parallel planes 5-30 cm apart): moisture through "
                   "the wall",
-    "plane_bulge": "wall surface off its fitted plane by > 15 mm (mean over >= 4 views) across >= 0.1 m^2: "
+    "plane_bulge": "wall surface off its fitted plane by > 25 mm (mean over >= 5 views) across >= 0.25 m^2: "
                    "hidden swelling or detached plaster",
 }
 
@@ -201,7 +201,7 @@ def detect(plan, dbg, capture_dir, tier, out_dir, wall_tol=0.03, min_len=0.8):
         npx = np.maximum(G.get("npx", np.ones_like(seen, np.float32)), 1)
         mdev = G["dev"] / npx
         # off-plane: mean deviation beyond 15 mm (iPhone LiDAR noise is ~1 cm per pixel)
-        O = (np.abs(mdev) > 0.015) & (seen >= 4)
+        O = (np.abs(mdev) > 0.025) & (seen >= 5)
         # a bright patch is only "surface loss" when the surface is also off-plane; bright alone is a
         # switch plate, glare or tile
         anyd = D | Y | (B & ndimage.binary_dilation(O, iterations=2))
@@ -240,6 +240,16 @@ def detect(plan, dbg, capture_dir, tier, out_dir, wall_tol=0.03, min_len=0.8):
             # colour: water stains have a yellow-brown cast (tidemarks); a shadow under furniture, a handle or
             # a switch is neutral dark. Neutral-dark regions are only kept when speckled (mould_like).
             # (An edge-softness rule was tried first and rejected the staged stain while keeping a shadow.)
+            # stains and mould are ON the wall: most of the region must be flush with the plane. Shoes, bags and
+            # cables standing against the wall (and the clean floor_only capture's only false alarm) are not.
+            if cls in ("stain_discoloration", "mould_like") and (np.abs(mdev[comp]) < 0.012).mean() < 0.7:
+                rejected["not_flush"] = rejected.get("not_flush", 0) + 1
+                continue
+            # dark neutral speckle right above the floor is far more often the shadow of something standing
+            # against the wall than mould; near the floor (< 0.25 m) mould must also show a colour cast
+            if cls == "mould_like" and np.nonzero(comp)[0].min() * CELL < 0.25 and (Y & comp).sum() < 0.2 * comp.sum():
+                rejected["floor_shadow"] = rejected.get("floor_shadow", 0) + 1
+                continue
             if cls == "stain_discoloration" and (Y & comp).sum() < 0.3 * comp.sum():
                 rejected["neutral_dark"] = rejected.get("neutral_dark", 0) + 1
                 continue
@@ -269,7 +279,7 @@ def detect(plan, dbg, capture_dir, tier, out_dir, wall_tol=0.03, min_len=0.8):
         if tier == "lidar":
             ol, on = ndimage.label(O)
             for i in range(1, on + 1):
-                if (ol == i).sum() * CELL * CELL >= 0.10:
+                if (ol == i).sum() * CELL * CELL >= 0.25:
                     flags.append({"surface": surface, "rule": "plane_bulge", "evidence": f"{surface}:off-plane",
                                   "description": RULES["plane_bulge"]})
                     break
