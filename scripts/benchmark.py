@@ -85,8 +85,15 @@ def plane_repeatability(A, B):
     diff = S[:, 1] - S[:, 0] if len(S) else np.array([])
     ok = (np.abs(diff) <= 0.01) | (np.abs(diff) <= 0.005 * S[:, 0]) if len(S) else np.array([])
     pos = np.array([p[2] - p[1] for p in pairs])
-    return {"planes_matched": len(pairs),
+    # relative scale between the captures: slope of plane positions B vs A per axis (1.0 = no scale error)
+    slope = {}
+    for ax_ in ("x", "z"):
+        P = np.array([(p[1], p[2]) for p in pairs if p[0] == ax_])
+        if len(P) > 2 and np.ptp(P[:, 0]) > 1.0:
+            slope[ax_] = round(float(np.polyfit(P[:, 0], P[:, 1], 1)[0]), 4)
+    return {"planes_matched": len(pairs), "relative_scale_slope": slope,
             "plane_position_median_abs_m": round(float(np.median(np.abs(pos))), 4) if len(pos) else None,
+            "planes_within_1cm": int((np.abs(pos) <= 0.01).sum()), "planes_within_2cm": int((np.abs(pos) <= 0.02).sum()),
             "spans_compared": len(S), "spans_pass": int(ok.sum()) if len(S) else 0,
             "span_pass_rate": round(float(ok.mean()), 3) if len(S) else None,
             "span_median_abs_diff_m": round(float(np.median(np.abs(diff))), 4) if len(diff) else None}

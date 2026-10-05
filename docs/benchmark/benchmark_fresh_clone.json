@@ -1,5 +1,5 @@
 {
- "tag": "final",
+ "tag": "reproduced",
  "repeatability_lidar": {
   "alignment_score": 0.593,
   "rotation_deg": 90,
@@ -268,98 +268,11 @@
  },
  "plane_repeatability_lidar": {
   "planes_matched": 30,
-  "relative_scale_slope": {
-   "x": 1.0024,
-   "z": 0.9946
-  },
   "plane_position_median_abs_m": 0.027,
-  "planes_within_1cm": 8,
-  "planes_within_2cm": 10,
   "spans_compared": 45,
   "spans_pass": 8,
   "span_pass_rate": 0.178,
   "span_median_abs_diff_m": 0.038
- },
- "opening_repeatability_lidar": {
-  "openings_a": 13,
-  "openings_b": 15,
-  "matched": 7,
-  "within_2cm": 2,
-  "within_2cm_frac": 0.286,
-  "median_abs_diff_m": 0.022,
-  "calibration_frac_within_95ci": 0.571,
-  "pairs": [
-   {
-    "a": "op1",
-    "b": "op1",
-    "kind_a": "door",
-    "kind_b": "door",
-    "width_a": 0.615,
-    "width_b": 0.593,
-    "diff_m": -0.022,
-    "z": -0.97
-   },
-   {
-    "a": "op2",
-    "b": "op11",
-    "kind_a": "door",
-    "kind_b": "passage",
-    "width_a": 0.713,
-    "width_b": 1.069,
-    "diff_m": 0.356,
-    "z": 14.26
-   },
-   {
-    "a": "op3",
-    "b": "op2",
-    "kind_a": "door",
-    "kind_b": "door",
-    "width_a": 0.499,
-    "width_b": 0.673,
-    "diff_m": 0.174,
-    "z": 7.81
-   },
-   {
-    "a": "op4",
-    "b": "op5",
-    "kind_a": "door",
-    "kind_b": "door",
-    "width_a": 0.873,
-    "width_b": 0.929,
-    "diff_m": 0.056,
-    "z": 2.19
-   },
-   {
-    "a": "op6",
-    "b": "op8",
-    "kind_a": "door",
-    "kind_b": "door",
-    "width_a": 1.041,
-    "width_b": 1.038,
-    "diff_m": -0.003,
-    "z": -0.13
-   },
-   {
-    "a": "op8",
-    "b": "op7",
-    "kind_a": "door",
-    "kind_b": "door",
-    "width_a": 0.846,
-    "width_b": 0.859,
-    "diff_m": 0.013,
-    "z": 0.54
-   },
-   {
-    "a": "op10",
-    "b": "op10",
-    "kind_a": "passage",
-    "kind_b": "passage",
-    "width_a": 1.029,
-    "width_b": 1.007,
-    "diff_m": -0.022,
-    "z": -0.82
-   }
-  ]
  },
  "ceilings": {
   "with_ceiling_lidar": [
@@ -662,6 +575,28 @@
    },
    {
     "kind": "door",
+    "width": 0.479,
+    "ci95": [
+     0.439,
+     0.519
+    ],
+    "rooms": [
+     "room5"
+    ]
+   },
+   {
+    "kind": "door",
+    "width": 0.582,
+    "ci95": [
+     0.546,
+     0.617
+    ],
+    "rooms": [
+     "room3"
+    ]
+   },
+   {
+    "kind": "door",
     "width": 0.615,
     "ci95": [
      0.584,
@@ -721,6 +656,17 @@
    },
    {
     "kind": "door",
+    "width": 0.756,
+    "ci95": [
+     0.724,
+     0.788
+    ],
+    "rooms": [
+     "room3"
+    ]
+   },
+   {
+    "kind": "door",
     "width": 1.041,
     "ci95": [
      1.009,
@@ -752,6 +698,39 @@
     "rooms": [
      "room10",
      "room12"
+    ]
+   },
+   {
+    "kind": "door",
+    "width": 1.104,
+    "ci95": [
+     1.072,
+     1.135
+    ],
+    "rooms": [
+     "room12"
+    ]
+   },
+   {
+    "kind": "door",
+    "width": 1.049,
+    "ci95": [
+     1.016,
+     1.082
+    ],
+    "rooms": [
+     "room4"
+    ]
+   },
+   {
+    "kind": "door",
+    "width": 0.965,
+    "ci95": [
+     0.93,
+     1.0
+    ],
+    "rooms": [
+     "room1"
     ]
    },
    {
@@ -853,6 +832,17 @@
    },
    {
     "kind": "door",
+    "width": 0.668,
+    "ci95": [
+     0.633,
+     0.703
+    ],
+    "rooms": [
+     "room2"
+    ]
+   },
+   {
+    "kind": "door",
     "width": 0.634,
     "ci95": [
      0.591,
@@ -910,6 +900,17 @@
     ]
    },
    {
+    "kind": "door",
+    "width": 1.14,
+    "ci95": [
+     1.108,
+     1.173
+    ],
+    "rooms": [
+     "room6"
+    ]
+   },
+   {
     "kind": "passage",
     "width": 1.054,
     "ci95": [
@@ -941,6 +942,17 @@
     ],
     "rooms": [
      "room11"
+    ]
+   },
+   {
+    "kind": "passage",
+    "width": 1.07,
+    "ci95": [
+     1.034,
+     1.107
+    ],
+    "rooms": [
+     "room4"
     ]
    },
    {
@@ -994,6 +1006,17 @@
    },
    {
     "kind": "door",
+    "width": 1.045,
+    "ci95": [
+     1.013,
+     1.078
+    ],
+    "rooms": [
+     "room3"
+    ]
+   },
+   {
+    "kind": "door",
     "width": 1.005,
     "ci95": [
      0.974,
@@ -1008,36 +1031,44 @@
  "reference": {
   "floor_only_photos_photo": {
    "rooms_ref": 11,
-   "rooms_tier": 7,
-   "rooms_matched": 2,
-   "footprint_ratio": 0.958,
+   "rooms_tier": 5,
+   "rooms_matched": 1,
+   "footprint_ratio": 0.937,
    "walls_compared": 0,
    "walls_within_8pct": 0,
    "walls_within_3pct": 0,
    "median_rel_err": null,
    "ref_inside_tier_ci95": null,
-   "alignment_score": 0.238,
+   "alignment_score": 0.219,
    "meta": {
-    "photos_total": null,
-    "photos_placed": null,
-    "room_folders_stitched": null,
-    "room_folders_unstitched": null,
+    "photos_total": 55,
+    "photos_placed": 40,
+    "room_folders_stitched": [
+     "Room_1",
+     "Room_2",
+     "Room_3",
+     "Room_4",
+     "Room_6",
+     "Room_7",
+     "Room_8"
+    ],
+    "room_folders_unstitched": [],
     "sfm_fragments": null,
     "frames_registered": null,
-    "runtime_s": 4.4
+    "runtime_s": 669.4
    }
   },
   "room_video_video": {
    "rooms_ref": 3,
-   "rooms_tier": 4,
-   "rooms_matched": 1,
-   "footprint_ratio": 0.58,
+   "rooms_tier": 3,
+   "rooms_matched": 0,
+   "footprint_ratio": 0.737,
    "walls_compared": 0,
    "walls_within_8pct": 0,
    "walls_within_3pct": 0,
    "median_rel_err": null,
    "ref_inside_tier_ci95": null,
-   "alignment_score": 0.353,
+   "alignment_score": 0.35,
    "meta": {
     "photos_total": null,
     "photos_placed": null,
@@ -1045,17 +1076,16 @@
     "room_folders_unstitched": null,
     "sfm_fragments": null,
     "frames_registered": null,
-    "runtime_s": 3.8
+    "runtime_s": 1064.0
    }
   }
  },
  "timing_s": {
-  "floor_only_photos_photo": 4.4,
-  "room_video_video": 3.8,
-  "with_ceiling_lidar_driftoff": 50.4,
-  "c00a170fe1_lidar": 5.3,
-  "floor_only_lidar": 60.0,
-  "with_ceiling_lidar": 75.2,
-  "room_lidar": 15.9
+  "floor_only_photos_photo": 669.4,
+  "room_video_video": 1064.0,
+  "with_ceiling_lidar_driftoff": 51.0,
+  "floor_only_lidar": 131.4,
+  "with_ceiling_lidar": 70.1,
+  "room_lidar": 43.0
  }
 }
