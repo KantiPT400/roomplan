@@ -92,6 +92,56 @@ def plane_repeatability(A, B):
             "span_median_abs_diff_m": round(float(np.median(np.abs(diff))), 4) if len(diff) else None}
 
 
+def _opening_segs(plan, M=None, t=None):
+    out = []
+    for o in plan["openings"]:
+        lo, hi = o["span"]
+        a, b = ((o["coord"], lo), (o["coord"], hi)) if o["axis"] == "x" else ((lo, o["coord"]), (hi, o["coord"]))
+        a, b = np.array(a, float), np.array(b, float)
+        if M is not None:
+            a, b = a @ M.T + t, b @ M.T + t
+        out.append((o, a, b))
+    return out
+
+
+def opening_repeatability(A, B, tol_perp=0.15, tol_along=0.25):
+    """Door/passage widths measured twice (two captures of the same property). This is the only real-data
+    evidence for the opening gate (<= 2 cm on >= 85%) we can produce without a tape measure: two captures
+    agreeing is necessary, not sufficient, for both being right."""
+    al = align(A, B)
+    sa, sb = _opening_segs(A), _opening_segs(B, al["M"], al["t"])
+    pairs, used = [], set()
+    for oa, a0, a1 in sa:
+        da = a1 - a0; ca = (a0 + a1) / 2; ua = da / (np.linalg.norm(da) + 1e-9)
+        best = None
+        for j, (ob, b0, b1) in enumerate(sb):
+            if j in used:
+                continue
+            db = b1 - b0; cb = (b0 + b1) / 2
+            if abs(np.dot(ua, db / (np.linalg.norm(db) + 1e-9))) < 0.9:      # not parallel
+                continue
+            off = cb - ca
+            along, perp = abs(np.dot(off, ua)), abs(ua[0] * off[1] - ua[1] * off[0])
+            if perp < tol_perp and along < tol_along and (best is None or along < best[0]):
+                best = (along, j, ob)
+        if best is not None:
+            used.add(best[1]); ob = best[2]
+            wa, wb = oa["width_m"], ob["width_m"]
+            d = wb["value"] - wa["value"]
+            s = np.hypot(wa["sigma"] or 0, wb["sigma"] or 0)
+            pairs.append({"a": oa["id"], "b": ob["id"], "kind_a": oa["kind"], "kind_b": ob["kind"],
+                          "width_a": wa["value"], "width_b": wb["value"], "diff_m": round(d, 4),
+                          "z": round(d / s, 2) if s > 0 else None})
+    d = np.array([p["diff_m"] for p in pairs])
+    z = np.array([p["z"] for p in pairs if p["z"] is not None])
+    return {"openings_a": len(sa), "openings_b": len(sb), "matched": len(pairs),
+            "within_2cm": int((np.abs(d) <= 0.02).sum()) if len(d) else 0,
+            "within_2cm_frac": round(float(np.mean(np.abs(d) <= 0.02)), 3) if len(d) else None,
+            "median_abs_diff_m": round(float(np.median(np.abs(d))), 4) if len(d) else None,
+            "calibration_frac_within_95ci": round(float(np.mean(np.abs(z) <= 1.96)), 3) if len(z) else None,
+            "pairs": pairs}
+
+
 def reference(R, T):
     """Tier T against reference plan R (same capture)."""
     r = compare(R, T)
@@ -123,6 +173,7 @@ def main():
     if wc and fo:
         res["repeatability_lidar"] = repeatability(wc, fo)
         res["plane_repeatability_lidar"] = plane_repeatability(wc, fo)
+        res["opening_repeatability_lidar"] = opening_repeatability(wc, fo)
     # ceilings
     res["ceilings"] = {}
     for n in ("with_ceiling_lidar", "floor_only_lidar", "room_lidar"):
