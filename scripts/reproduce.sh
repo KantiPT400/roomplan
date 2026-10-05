@@ -13,7 +13,7 @@ cd "$REPO"
 bash scripts/fetch_models.sh
 DATA="$OUT/data"; mkdir -p "$DATA" "$OUT/runs" "$OUT/benchmark"
 
-inner() { dirname "$(find "$1" -maxdepth 2 -name odometry.csv | head -1)"; }
+inner() { dirname "$(find -L "$1" -maxdepth 2 -name odometry.csv | head -1)"; }
 ln -sfn "$(inner "$SAMPLE/single_room")" "$DATA/room"
 ln -sfn "$(inner "$SAMPLE/single_scan_floor_only")" "$DATA/floor_only"
 ln -sfn "$(inner "$SAMPLE/single_scan_with_ceiling")" "$DATA/with_ceiling"
