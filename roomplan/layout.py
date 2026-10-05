@@ -145,7 +145,9 @@ def refine_jambs(o: Opening, Q, floor_y, face_tol=0.05, win=0.35, band=(0.3, 1.8
     hi_side = s[(s > o.hi - 0.10) & (s < o.hi + win)]
     new_lo = float(np.percentile(lo_side, 98)) if len(lo_side) > 30 else o.lo
     new_hi = float(np.percentile(hi_side, 2)) if len(hi_side) > 30 else o.hi
-    if 0.4 < new_hi - new_lo < o.hi - o.lo + 0.15:
+    # accept in either direction: cell-based wall ends can stop short of the frame (door too wide) or be
+    # bridged into the doorway by the run-closing step (door too narrow)
+    if 0.4 < new_hi - new_lo < 1.6 and abs((new_hi - new_lo) - (o.hi - o.lo)) < 0.3:
         o.lo, o.hi = new_lo, new_hi
         o.refined = True
     return o

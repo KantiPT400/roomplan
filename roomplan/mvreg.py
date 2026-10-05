@@ -25,7 +25,7 @@ from .singleview import calibrate, depth_from
 from .pseudo import CAM_HEIGHT_PRIOR
 
 DS = 4
-MIN_E_INL = 25
+MIN_E_INL = 40   # was 25; at >= 40 inliers 50% of registrations were right vs 31% overall (truth check)
 
 
 class View:
@@ -160,6 +160,10 @@ def layout(views, pairs, log=print):
             edges.append((a, b, r))
     log(f"pairs tried {len(pairs)}, registered {len(edges)} "
         f"(E {sum(e[2]['method'] == 'E' for e in edges)}, PnP {sum(e[2]['method'] == 'PnP' for e in edges)})")
+    return _layout_core(views, edges, log, first=True)
+
+
+def _layout_core(views, edges, log=print, first=False):
     n = len(views)
     parent = list(range(n))
     def find(x):
@@ -222,7 +226,29 @@ def layout(views, pairs, log=print):
                 C[k], c[k], comp_of[k] = Ck, ck, ci
                 stack.append(k)
     C, c = refine(views, edges, C, c, comp_of, log)
+    if not first:
+        return C, c, comp_of, comps, edges
+    # hub suppression (post-mortem of the fix loop): a view whose edges mostly disagree with the global
+    # solution (heading residual > 15 deg) is matching a repetitive pattern; drop its edges and re-solve
+    wrap = lambda x: (x + np.pi) % (2 * np.pi) - np.pi
+    bad, tot = {}, {}
+    for a_, b_, r in edges:
+        if a_ in C and b_ in C:
+            Rb_pred = C[a_] @ r["R"].T          # C_b predicted from C_a and the edge
+            res = np.degrees(Rotation.from_matrix(Rb_pred @ C[b_].T).magnitude())
+            for v_ in (a_, b_):
+                tot[v_] = tot.get(v_, 0) + 1
+                bad[v_] = bad.get(v_, 0) + (res > 15)
+    hubs = {v_ for v_ in tot if tot[v_] >= 4 and bad[v_] / tot[v_] > 0.5}
+    if hubs:
+        log(f"hub suppression: dropping edges of {len(hubs)} views ({sorted(views[h].name for h in hubs)[:5]})")
+        edges = [(a_, b_, r) for a_, b_, r in edges if a_ not in hubs and b_ not in hubs]
+        return layout_from_edges(views, edges, log)
     return C, c, comp_of, comps, edges
+
+
+def layout_from_edges(views, edges, log=print):
+    return _layout_core(views, edges, log)
 
 
 def _yaw_of(M):

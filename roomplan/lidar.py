@@ -65,7 +65,7 @@ def run(root, stride=10, voxel=0.015, drift_sigma_per_m=0.0, frames=None, theta=
     cam = scan.positions()
     cam_y = float(np.median(cam[:, 1]))
     # mono depth smears planes over ~+-10 cm: coarser bins and a lower mass threshold off-LiDAR
-    fc = (find_floor_ceiling(P, cam_y) if tier == "lidar"
+    fc = (find_floor_ceiling(P, cam_y, ceil_frac=0.01) if tier == "lidar"
           else find_floor_ceiling(P, cam_y, bin_=0.03, floor_frac=0.02, ceil_frac=0.015))
     if fc["floor"] is None:
         raise RuntimeError("no floor plane found")
@@ -88,7 +88,9 @@ def run(root, stride=10, voxel=0.015, drift_sigma_per_m=0.0, frames=None, theta=
     P, F = fuse(scan, stride=stride, voxel=voxel, frames=frames)
     cam = scan.positions()
     Q, R2 = rotate_xz(P, th)
-    walls, ext, lo, res = extract_walls(Q, fy, min(top, fy + 2.2))
+    # wall evidence is gathered up to just under the ceiling when one was found (walls seen only high up
+    # still count), else up to 2.2 m above the floor
+    walls, ext, lo, res = extract_walls(Q, fy, min(top, fy + 3.2) if fc["ceiling"] else fy + 2.2)
     # which side each wall face was seen from: a room edge may only snap to a face seen from inside it
     from .drift import wall_facing
     posd = dict(zip(scan.poses["frame"].to_numpy(), scan.positions()))

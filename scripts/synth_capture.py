@@ -81,12 +81,15 @@ rays_cam /= np.linalg.norm(rays_cam, axis=-1, keepdims=True)
 # trajectory: loop A -> door -> B -> door -> back to start, in the flat frame
 way = np.array([[1.8, 1.5], [3.3, 2.6], [3.6, 1.65], [AX + T + 0.8, 1.65], [AX + T + 1.6, 0.8], [AX + T + 1.8, 2.6],
                 [AX + T + 0.8, 1.65], [3.6, 1.65], [2.5, 0.9], [1.0, 2.4], [1.8, 1.5]])
+way = way + np.r_[[np.zeros(2)], rng.uniform(-0.25, 0.25, (len(way) - 2, 2)), [np.zeros(2)]]  # per-seed path
+way[-1] = way[0]
 seg = np.linalg.norm(np.diff(way, axis=0), axis=1); cum = np.r_[0, np.cumsum(seg)]
 n = a.frames
 dist = np.linspace(0, cum[-1], n)
 xz = np.stack([np.interp(dist, cum, way[:, 0]), np.interp(dist, cum, way[:, 1])], 1)
 t = np.arange(n) / 46.0
-yaw = np.cumsum(np.r_[0, np.full(n - 1, 360 * 2.2 / n)]) + 40 * np.sin(t * 0.9)   # keeps turning, sweeps walls
+phase = rng.uniform(0, 2 * np.pi)
+yaw = np.cumsum(np.r_[0, np.full(n - 1, 360 * 2.2 / n)]) + 40 * np.sin(t * 0.9 + phase)   # keeps turning, sweeps walls
 pitch = -20 + 15 * np.sin(t * 0.5)
 for c in (0.18, 0.62):                                     # look up at the ceiling once per room
     k = int(c * n); w = int(0.03 * n)
