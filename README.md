@@ -20,6 +20,11 @@ to surfaces, and a 95% interval on every measurement.
 
 How to capture: [`docs/capture_protocol.md`](docs/capture_protocol.md) (one page, written for a non-engineer).
 
+![with_ceiling sample capture, LiDAR tier](docs/sample_outputs/with_ceiling_lidar/plan.png)
+
+*The supplied `single_scan_with_ceiling` capture: 12 rooms, 13 openings, measured ceilings, every length with its
+95% interval. Outputs for every sample capture and tier: [`docs/sample_outputs/`](docs/sample_outputs/).*
+
 ## Setup (clean machine, ~10 minutes)
 
 Python 3.10-3.13 and `ffmpeg` on the PATH.
@@ -29,8 +34,11 @@ git clone https://github.com/KantiPT400/roomplan && cd roomplan
 python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python scripts/fetch_models.py                         # Depth Anything V2 small (ONNX, 99 MB), checksum-verified
-python -m roomplan /path/to/stray_scanner_export       # e.g. the sample single_room/c00a170fe1
+python -m roomplan /path/to/single_room                # a Stray Scanner export; the folder as delivered works
 ```
+
+`requirements.txt` gives minimum versions; `pip install -r requirements-lock.txt` installs the exact versions
+behind the reported numbers (the photo/video tiers are sensitive to them; report section 5).
 
 Everything runs on CPU, offline once the weights are fetched; nothing calls our infrastructure.
 Useful flags: `--drift off` (ablation), `--no-damage` (skip wall damage), `--reuse` (video/photo: re-run only the
@@ -43,7 +51,8 @@ end-to-end on a rendered flat with exact ground truth).
 |---|---|---|---|
 | runs end to end, same output contract | yes | yes | yes |
 | synthetic ground truth (exact) | walls 24/24 within 2 cm, ceilings within 2 mm, doors 5/6 within 2 cm | not measured | not measured |
-| real data | two captures of one apartment: planes agree to a median 2.7 cm; 1 cm repeatability gate fails | footprint 0.96 x LiDAR, rooms under-segmented | partial (largest registered stretch) |
+| real data | two captures of one apartment: 8/30 wall planes within 1 cm (median 2.7 cm), door widths 2/7 within 2 cm; the 1 cm repeatability gate fails | footprint 0.96 x LiDAR, rooms under-segmented (7 vs 11) | partial (largest registered stretch, 43 of 223 frames) |
+| staged damage | crack 0.62 m (truth 0.60), stain 0.141 m^2 (truth 0.114), 0 false alarms on two clean captures | not run | not run |
 | drift | loop residual 11.4 -> 2.1 cm with the pose graph | n/a | n/a |
 
 ## Reproduce every reported number
@@ -71,4 +80,5 @@ See [`docs/report.md`](docs/report.md) for what each number means and its limits
 | `scripts/inject_damage.py` | staged-damage test (known synthetic stain + crack painted consistently into every frame) |
 | `scripts/make_photo_set.py` | photo-tier test folders cut from a LiDAR capture's video, following the protocol |
 | `scripts/photo_registration_truth.py` | scores photo registrations against the capture's own poses |
-| `docs/` | protocol, device matrix, compliance matrix, report, fix loop |
+| `docs/` | protocol, device matrix, compliance matrix, report (`report.md`, `report.pdf`), fix loop |
+| `docs/sample_outputs/` | plan.json + plan.png for every sample capture and tier, staged-damage wall image |
