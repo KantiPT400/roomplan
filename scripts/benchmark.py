@@ -57,14 +57,14 @@ def plane_repeatability(A, B):
         for rm in p["rooms"]:
             for w in rm["walls"]:
                 if w["plane_measured"]:
-                    o.append(_wall_axis(w))
+                    o.append(_wall_axis(w, rm["polygon_m"]))
         return o
     pa, pb = planes(A), planes(Bt)
     pairs = []
-    for ax, c, s in pa:
+    for ax, c, s, fa in pa:
         best = None
-        for bx, cb, sb in pb:
-            if bx != ax or abs(cb - c) > 0.15:
+        for bx, cb, sb, fb in pb:
+            if bx != ax or fb != fa or abs(cb - c) > 0.15:
                 continue
             ov = min(s[1], sb[1]) - max(s[0], sb[0])
             if ov > 0.4 and (best is None or abs(cb - c) < abs(best - c)):

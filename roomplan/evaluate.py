@@ -108,20 +108,33 @@ def match_rooms(A, B, min_iou=0.4):
     return pairs
 
 
-def _wall_axis(w):
+def _wall_axis(w, poly=None):
+    """(axis, coordinate, span[, facing]). facing = +1/-1: direction of the room interior along the
+    wall's normal axis. Two faces of one interior wall are 10-25 cm apart and face opposite ways; they are
+    different surfaces and must never be matched to each other."""
     a, b = np.array(w["from"]), np.array(w["to"])
-    return ("x", (a[0] + b[0]) / 2, sorted((a[1], b[1]))) if abs(a[0] - b[0]) < abs(a[1] - b[1]) \
-        else ("z", (a[1] + b[1]) / 2, sorted((a[0], b[0])))
+    if abs(a[0] - b[0]) < abs(a[1] - b[1]):
+        out = ("x", (a[0] + b[0]) / 2, sorted((a[1], b[1])))
+    else:
+        out = ("z", (a[1] + b[1]) / 2, sorted((a[0], b[0])))
+    if poly is None:
+        return out
+    P = np.asarray(poly, float)
+    cen = (a + b) / 2
+    k = 0 if out[0] == "x" else 1
+    probe = cen.copy(); probe[k] += 0.05
+    facing = 1 if Path(P).contains_point(probe) else -1
+    return out + (facing,)
 
 
 def match_walls(ra, rb, pos_tol=0.15, min_ov_frac=0.5):
     out = []
     for wa in ra["walls"]:
-        axa, ca, sa = _wall_axis(wa)
+        axa, ca, sa, fa = _wall_axis(wa, ra["polygon_m"])
         best = None
         for wb in rb["walls"]:
-            axb, cb, sb = _wall_axis(wb)
-            if axa != axb or abs(ca - cb) > pos_tol:
+            axb, cb, sb, fb = _wall_axis(wb, rb["polygon_m"])
+            if axa != axb or fa != fb or abs(ca - cb) > pos_tol:
                 continue
             ov = min(sa[1], sb[1]) - max(sa[0], sb[0])
             if ov < min_ov_frac * min(sa[1] - sa[0], sb[1] - sb[0]):
