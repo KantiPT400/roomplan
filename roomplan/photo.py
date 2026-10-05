@@ -135,21 +135,36 @@ def run(capture, out_dir, prior=CAM_HEIGHT_PRIOR, log=print):
     n = len(views)
     log(f"photos {n}, self-calibrated {sum(v.cal is not None for v in views)}")
     pairs = [(a, b) for a in range(n) for b in range(n) if a != b]
-    C, c, comp_of, comps, edges = layout(views, pairs, log)
     pdir = os.path.join(work, "pseudo")
-    df, meta = write_pseudo(views, C, c, comp_of, pdir, "photo", prior=prior)
-    plan, dbg = run_geometry(pdir, stride=1, drift="off")
+    try:
+        C, c, comp_of, comps, edges = layout(views, pairs, log)
+        df, meta = write_pseudo(views, C, c, comp_of, pdir, "photo", prior=prior)
+        plan, dbg = run_geometry(pdir, stride=1, drift="off")
+    except Exception as e:                          # too few usable photos to map anything
+        log(f"stitched mapping failed ({e!r}); single-view estimates only")
+        plan = {"meta": {"tier": "photo", "mapping_error": repr(e)}, "rooms": [], "openings": [], "adjacency": []}
+        dbg, edges, comps = {}, [], []
+        df = pd.DataFrame(columns=["x", "z", "group", "main_component", "image"])
     from matplotlib.path import Path
-    cam = df[["x", "z"]].to_numpy() @ dbg["R2"].T
-    for r in plan["rooms"]:
-        inside = Path(np.array(r["polygon_m"])).contains_points(cam)
-        if inside.any():
-            vals, cnt = np.unique(df["group"].to_numpy()[inside], return_counts=True)
-            r["name"] = str(vals[np.argmax(cnt)])
-            r["photo_folders"] = {str(v): int(k) for v, k in zip(vals, cnt)}
-        r["stitched"] = bool(inside.any() and df["main_component"].to_numpy()[inside].mean() > 0.5)
+    if len(df) and "R2" in dbg:
+        cam = df[["x", "z"]].to_numpy() @ dbg["R2"].T
+        for r in plan["rooms"]:
+            inside = Path(np.array(r["polygon_m"])).contains_points(cam)
+            if inside.any():
+                vals, cnt = np.unique(df["group"].to_numpy()[inside], return_counts=True)
+                r["name"] = str(vals[np.argmax(cnt)])
+                r["photo_folders"] = {str(v): int(k) for v, k in zip(vals, cnt)}
+            r["stitched"] = bool(inside.any() and df["main_component"].to_numpy()[inside].mean() > 0.5)
     folders = sorted(set(it["room"] for it in items))
-    main_f = sorted(set(df.loc[df["main_component"] == 1, "group"]))
+    main_f = sorted(set(df.loc[df["main_component"] == 1, "group"])) if len(df) else []
+    # any picture in, results out: folders with no stitched room get a single-view estimate beside the plan
+    named = {r.get("name") for r in plan["rooms"]}
+    missing = [f for f in folders if f not in named]
+    if missing:
+        from .fallback import estimate_rooms
+        xs = [p[0] for r in plan["rooms"] for p in r["polygon_m"]]
+        x0 = (max(xs) + 2.0) if xs else 0.0
+        plan["rooms"] += estimate_rooms(views, missing, x0)
     plan["meta"].update({
         "photos_total": n, "photos_self_calibrated": int(sum(v.cal is not None for v in views)),
         "photos_placed": int(len(df)), "registered_pairs": len(edges),

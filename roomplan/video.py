@@ -124,10 +124,20 @@ def run(capture, out_dir, fps=FPS, log=print):
     log(f"self-calibrated frames {sum(v.cal is not None for v in views)}/{n}")
     pairs = [(i, j) for i in range(n) for j in range(i + 1, min(n, i + 1 + NEIGHBOURS))]
     pairs += [(j, i) for i, j in pairs]
-    C, c, comp_of, comps, edges = layout(views, pairs, log)
     pdir = os.path.join(work, "pseudo")
-    df, meta = write_pseudo(views, C, c, comp_of, pdir, "video", fps=fps)
-    plan, dbg = run_geometry(pdir, stride=1, drift="on")
+    try:
+        C, c, comp_of, comps, edges = layout(views, pairs, log)
+        df, meta = write_pseudo(views, C, c, comp_of, pdir, "video", fps=fps)
+        plan, dbg = run_geometry(pdir, stride=1, drift="on")
+    except Exception as e:                          # too little usable footage to map anything
+        log(f"mapping failed ({e!r}); single-view estimate only")
+        import pandas as pd
+        plan = {"meta": {"tier": "video", "mapping_error": repr(e)}, "rooms": [], "openings": [], "adjacency": []}
+        dbg, edges, comps = {}, [], []
+        df = pd.DataFrame(columns=["main_component"])
+    if not plan["rooms"]:
+        from .fallback import estimate_rooms
+        plan["rooms"] = estimate_rooms(views, ["video"], 0.0)
     plan["meta"].update({"frames_total": n, "frames_placed": int(len(df)),
                          "frames_in_main_component": int(df["main_component"].sum()),
                          "components": [len(cc) for cc in comps if len(cc) > 1][:20],
