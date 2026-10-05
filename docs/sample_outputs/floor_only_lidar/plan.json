@@ -1,0 +1,4359 @@
+{
+ "schema_version": "1.0",
+ "capture": "floor_only",
+ "tier": "lidar",
+ "units": "metres",
+ "rooms": [
+  {
+   "id": "room1",
+   "polygon_m": [
+    [
+     3.372,
+     -2.753
+    ],
+    [
+     3.372,
+     -0.44
+    ],
+    [
+     4.742,
+     -0.44
+    ],
+    [
+     4.742,
+     -0.224
+    ],
+    [
+     5.754,
+     -0.224
+    ],
+    [
+     5.754,
+     -2.753
+    ]
+   ],
+   "walls": [
+    {
+     "id": "r1w0",
+     "from": [
+      3.372,
+      -2.753
+     ],
+     "to": [
+      3.372,
+      -0.44
+     ],
+     "length_m": {
+      "value": 2.313,
+      "ci95": [
+       2.274,
+       2.353
+      ],
+      "sigma": 0.0201
+     },
+     "plane_measured": false,
+     "ends_measured": true
+    },
+    {
+     "id": "r1w1",
+     "from": [
+      3.372,
+      -0.44
+     ],
+     "to": [
+      4.742,
+      -0.44
+     ],
+     "length_m": {
+      "value": 1.37,
+      "ci95": [
+       1.173,
+       1.567
+      ],
+      "sigma": 0.1006
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r1w2",
+     "from": [
+      4.742,
+      -0.44
+     ],
+     "to": [
+      4.742,
+      -0.224
+     ],
+     "length_m": {
+      "value": 0.216,
+      "ci95": [
+       0.193,
+       0.239
+      ],
+      "sigma": 0.0118
+     },
+     "plane_measured": false,
+     "ends_measured": true
+    },
+    {
+     "id": "r1w3",
+     "from": [
+      4.742,
+      -0.224
+     ],
+     "to": [
+      5.754,
+      -0.224
+     ],
+     "length_m": {
+      "value": 1.012,
+      "ci95": [
+       0.815,
+       1.209
+      ],
+      "sigma": 0.1005
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r1w4",
+     "from": [
+      5.754,
+      -0.224
+     ],
+     "to": [
+      5.754,
+      -2.753
+     ],
+     "length_m": {
+      "value": 2.529,
+      "ci95": [
+       2.491,
+       2.568
+      ],
+      "sigma": 0.0196
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r1w5",
+     "from": [
+      5.754,
+      -2.753
+     ],
+     "to": [
+      3.372,
+      -2.753
+     ],
+     "length_m": {
+      "value": 2.382,
+      "ci95": [
+       2.183,
+       2.581
+      ],
+      "sigma": 0.1016
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    }
+   ],
+   "dimensions_m": {
+    "along_x": {
+     "value": 2.382,
+     "ci95": [
+      2.183,
+      2.581
+     ],
+     "sigma": 0.1016,
+     "ends_measured": false
+    },
+    "along_z": {
+     "value": 2.529,
+     "ci95": [
+      2.491,
+      2.568
+     ],
+     "sigma": 0.0196,
+     "ends_measured": true
+    }
+   },
+   "floor_area_m2": {
+    "value": 5.73,
+    "ci95": [
+     5.43,
+     6.03
+    ],
+    "sigma": 0.1521
+   },
+   "perimeter_m": 9.82,
+   "ceiling_height_m": {
+    "value": null,
+    "ci95": [
+     2.3,
+     3.3
+    ],
+    "sigma": null,
+    "status": "not_observed",
+    "note": "capture did not see the ceiling over this room; prior range only"
+   },
+   "name": "Room 1"
+  },
+  {
+   "id": "room2",
+   "polygon_m": [
+    [
+     -0.128,
+     -2.588
+    ],
+    [
+     -0.128,
+     -0.057
+    ],
+    [
+     0.732,
+     -0.057
+    ],
+    [
+     0.732,
+     0.363
+    ],
+    [
+     2.676,
+     0.363
+    ],
+    [
+     2.676,
+     -2.588
+    ]
+   ],
+   "walls": [
+    {
+     "id": "r2w0",
+     "from": [
+      -0.128,
+      -2.588
+     ],
+     "to": [
+      -0.128,
+      -0.057
+     ],
+     "length_m": {
+      "value": 2.531,
+      "ci95": [
+       2.489,
+       2.574
+      ],
+      "sigma": 0.0218
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r2w1",
+     "from": [
+      -0.128,
+      -0.057
+     ],
+     "to": [
+      0.732,
+      -0.057
+     ],
+     "length_m": {
+      "value": 0.86,
+      "ci95": [
+       0.839,
+       0.881
+      ],
+      "sigma": 0.0107
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r2w2",
+     "from": [
+      0.732,
+      -0.057
+     ],
+     "to": [
+      0.732,
+      0.363
+     ],
+     "length_m": {
+      "value": 0.421,
+      "ci95": [
+       0.402,
+       0.44
+      ],
+      "sigma": 0.0097
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r2w3",
+     "from": [
+      0.732,
+      0.363
+     ],
+     "to": [
+      2.676,
+      0.363
+     ],
+     "length_m": {
+      "value": 1.944,
+      "ci95": [
+       1.912,
+       1.976
+      ],
+      "sigma": 0.0164
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r2w4",
+     "from": [
+      2.676,
+      0.363
+     ],
+     "to": [
+      2.676,
+      -2.588
+     ],
+     "length_m": {
+      "value": 2.952,
+      "ci95": [
+       2.905,
+       2.998
+      ],
+      "sigma": 0.0237
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r2w5",
+     "from": [
+      2.676,
+      -2.588
+     ],
+     "to": [
+      -0.128,
+      -2.588
+     ],
+     "length_m": {
+      "value": 2.804,
+      "ci95": [
+       2.762,
+       2.845
+      ],
+      "sigma": 0.0212
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    }
+   ],
+   "dimensions_m": {
+    "along_x": {
+     "value": 2.804,
+     "ci95": [
+      2.762,
+      2.845
+     ],
+     "sigma": 0.0212,
+     "ends_measured": true
+    },
+    "along_z": {
+     "value": 2.952,
+     "ci95": [
+      2.905,
+      2.998
+     ],
+     "sigma": 0.0237,
+     "ends_measured": true
+    }
+   },
+   "floor_area_m2": {
+    "value": 7.91,
+    "ci95": [
+     7.8,
+     8.02
+    ],
+    "sigma": 0.0561
+   },
+   "perimeter_m": 11.51,
+   "ceiling_height_m": {
+    "value": null,
+    "ci95": [
+     2.3,
+     3.3
+    ],
+    "sigma": null,
+    "status": "not_observed",
+    "note": "capture did not see the ceiling over this room; prior range only"
+   },
+   "name": "Room 2"
+  },
+  {
+   "id": "room3",
+   "polygon_m": [
+    [
+     2.755,
+     -0.334
+    ],
+    [
+     2.755,
+     0.656
+    ],
+    [
+     4.663,
+     0.656
+    ],
+    [
+     4.663,
+     -0.334
+    ]
+   ],
+   "walls": [
+    {
+     "id": "r3w0",
+     "from": [
+      2.755,
+      -0.334
+     ],
+     "to": [
+      2.755,
+      0.656
+     ],
+     "length_m": {
+      "value": 0.99,
+      "ci95": [
+       0.971,
+       1.01
+      ],
+      "sigma": 0.01
+     },
+     "plane_measured": false,
+     "ends_measured": true
+    },
+    {
+     "id": "r3w1",
+     "from": [
+      2.755,
+      0.656
+     ],
+     "to": [
+      4.663,
+      0.656
+     ],
+     "length_m": {
+      "value": 1.908,
+      "ci95": [
+       1.71,
+       2.107
+      ],
+      "sigma": 0.1011
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r3w2",
+     "from": [
+      4.663,
+      0.656
+     ],
+     "to": [
+      4.663,
+      -0.334
+     ],
+     "length_m": {
+      "value": 0.99,
+      "ci95": [
+       0.971,
+       1.01
+      ],
+      "sigma": 0.01
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r3w3",
+     "from": [
+      4.663,
+      -0.334
+     ],
+     "to": [
+      2.755,
+      -0.334
+     ],
+     "length_m": {
+      "value": 1.908,
+      "ci95": [
+       1.71,
+       2.107
+      ],
+      "sigma": 0.1011
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    }
+   ],
+   "dimensions_m": {
+    "along_x": {
+     "value": 1.908,
+     "ci95": [
+      1.71,
+      2.107
+     ],
+     "sigma": 0.1011,
+     "ends_measured": false
+    },
+    "along_z": {
+     "value": 0.99,
+     "ci95": [
+      0.971,
+      1.01
+     ],
+     "sigma": 0.01,
+     "ends_measured": true
+    }
+   },
+   "floor_area_m2": {
+    "value": 1.89,
+    "ci95": [
+     1.62,
+     2.16
+    ],
+    "sigma": 0.1366
+   },
+   "perimeter_m": 5.8,
+   "ceiling_height_m": {
+    "value": null,
+    "ci95": [
+     2.3,
+     3.3
+    ],
+    "sigma": null,
+    "status": "not_observed",
+    "note": "capture did not see the ceiling over this room; prior range only"
+   },
+   "name": "Room 3"
+  },
+  {
+   "id": "room4",
+   "polygon_m": [
+    [
+     0.797,
+     0.798
+    ],
+    [
+     0.797,
+     2.185
+    ],
+    [
+     0.557,
+     2.185
+    ],
+    [
+     0.557,
+     3.643
+    ],
+    [
+     3.603,
+     3.643
+    ],
+    [
+     3.603,
+     3.955
+    ],
+    [
+     5.147,
+     3.955
+    ],
+    [
+     5.147,
+     3.014
+    ],
+    [
+     4.663,
+     3.014
+    ],
+    [
+     4.663,
+     0.798
+    ]
+   ],
+   "walls": [
+    {
+     "id": "r4w0",
+     "from": [
+      0.797,
+      0.798
+     ],
+     "to": [
+      0.797,
+      2.185
+     ],
+     "length_m": {
+      "value": 1.387,
+      "ci95": [
+       1.19,
+       1.584
+      ],
+      "sigma": 0.1007
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r4w1",
+     "from": [
+      0.797,
+      2.185
+     ],
+     "to": [
+      0.557,
+      2.185
+     ],
+     "length_m": {
+      "value": 0.24,
+      "ci95": [
+       0.044,
+       0.436
+      ],
+      "sigma": 0.1001
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r4w2",
+     "from": [
+      0.557,
+      2.185
+     ],
+     "to": [
+      0.557,
+      3.643
+     ],
+     "length_m": {
+      "value": 1.459,
+      "ci95": [
+       1.261,
+       1.656
+      ],
+      "sigma": 0.1007
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r4w3",
+     "from": [
+      0.557,
+      3.643
+     ],
+     "to": [
+      3.603,
+      3.643
+     ],
+     "length_m": {
+      "value": 3.046,
+      "ci95": [
+       2.844,
+       3.247
+      ],
+      "sigma": 0.1027
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r4w4",
+     "from": [
+      3.603,
+      3.643
+     ],
+     "to": [
+      3.603,
+      3.955
+     ],
+     "length_m": {
+      "value": 0.311,
+      "ci95": [
+       0.115,
+       0.508
+      ],
+      "sigma": 0.1002
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r4w5",
+     "from": [
+      3.603,
+      3.955
+     ],
+     "to": [
+      5.147,
+      3.955
+     ],
+     "length_m": {
+      "value": 1.544,
+      "ci95": [
+       1.346,
+       1.742
+      ],
+      "sigma": 0.101
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r4w6",
+     "from": [
+      5.147,
+      3.955
+     ],
+     "to": [
+      5.147,
+      3.014
+     ],
+     "length_m": {
+      "value": 0.941,
+      "ci95": [
+       0.744,
+       1.138
+      ],
+      "sigma": 0.1004
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r4w7",
+     "from": [
+      5.147,
+      3.014
+     ],
+     "to": [
+      4.663,
+      3.014
+     ],
+     "length_m": {
+      "value": 0.484,
+      "ci95": [
+       0.287,
+       0.68
+      ],
+      "sigma": 0.1003
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r4w8",
+     "from": [
+      4.663,
+      3.014
+     ],
+     "to": [
+      4.663,
+      0.798
+     ],
+     "length_m": {
+      "value": 2.216,
+      "ci95": [
+       2.183,
+       2.249
+      ],
+      "sigma": 0.017
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r4w9",
+     "from": [
+      4.663,
+      0.798
+     ],
+     "to": [
+      0.797,
+      0.798
+     ],
+     "length_m": {
+      "value": 3.866,
+      "ci95": [
+       3.663,
+       4.069
+      ],
+      "sigma": 0.1038
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    }
+   ],
+   "dimensions_m": {
+    "along_x": {
+     "value": 4.59,
+     "ci95": [
+      4.384,
+      4.796
+     ],
+     "sigma": 0.1052,
+     "ends_measured": false
+    },
+    "along_z": {
+     "value": 3.157,
+     "ci95": [
+      2.956,
+      3.358
+     ],
+     "sigma": 0.1026,
+     "ends_measured": false
+    }
+   },
+   "floor_area_m2": {
+    "value": 12.14,
+    "ci95": [
+     11.57,
+     12.71
+    ],
+    "sigma": 0.2909
+   },
+   "perimeter_m": 15.49,
+   "ceiling_height_m": {
+    "value": null,
+    "ci95": [
+     2.3,
+     3.3
+    ],
+    "sigma": null,
+    "status": "not_observed",
+    "note": "capture did not see the ceiling over this room; prior range only"
+   },
+   "name": "Room 4"
+  },
+  {
+   "id": "room5",
+   "polygon_m": [
+    [
+     0.112,
+     2.154
+    ],
+    [
+     -0.178,
+     2.154
+    ],
+    [
+     -0.178,
+     1.827
+    ],
+    [
+     -1.288,
+     1.827
+    ],
+    [
+     -1.288,
+     2.17
+    ],
+    [
+     -1.603,
+     2.17
+    ],
+    [
+     -1.603,
+     2.725
+    ],
+    [
+     -1.003,
+     2.725
+    ],
+    [
+     -1.003,
+     3.145
+    ],
+    [
+     -1.798,
+     3.145
+    ],
+    [
+     -1.798,
+     3.643
+    ],
+    [
+     0.112,
+     3.643
+    ]
+   ],
+   "walls": [
+    {
+     "id": "r5w0",
+     "from": [
+      0.112,
+      2.154
+     ],
+     "to": [
+      -0.178,
+      2.154
+     ],
+     "length_m": {
+      "value": 0.29,
+      "ci95": [
+       0.094,
+       0.487
+      ],
+      "sigma": 0.1002
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r5w1",
+     "from": [
+      -0.178,
+      2.154
+     ],
+     "to": [
+      -0.178,
+      1.827
+     ],
+     "length_m": {
+      "value": 0.326,
+      "ci95": [
+       0.129,
+       0.523
+      ],
+      "sigma": 0.1005
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r5w2",
+     "from": [
+      -0.178,
+      1.827
+     ],
+     "to": [
+      -1.288,
+      1.827
+     ],
+     "length_m": {
+      "value": 1.11,
+      "ci95": [
+       0.913,
+       1.307
+      ],
+      "sigma": 0.1004
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r5w3",
+     "from": [
+      -1.288,
+      1.827
+     ],
+     "to": [
+      -1.288,
+      2.17
+     ],
+     "length_m": {
+      "value": 0.342,
+      "ci95": [
+       0.146,
+       0.539
+      ],
+      "sigma": 0.1002
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r5w4",
+     "from": [
+      -1.288,
+      2.17
+     ],
+     "to": [
+      -1.603,
+      2.17
+     ],
+     "length_m": {
+      "value": 0.315,
+      "ci95": [
+       0.119,
+       0.511
+      ],
+      "sigma": 0.1001
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r5w5",
+     "from": [
+      -1.603,
+      2.17
+     ],
+     "to": [
+      -1.603,
+      2.725
+     ],
+     "length_m": {
+      "value": 0.555,
+      "ci95": [
+       0.359,
+       0.751
+      ],
+      "sigma": 0.1002
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r5w6",
+     "from": [
+      -1.603,
+      2.725
+     ],
+     "to": [
+      -1.003,
+      2.725
+     ],
+     "length_m": {
+      "value": 0.6,
+      "ci95": [
+       0.404,
+       0.796
+      ],
+      "sigma": 0.1002
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r5w7",
+     "from": [
+      -1.003,
+      2.725
+     ],
+     "to": [
+      -1.003,
+      3.145
+     ],
+     "length_m": {
+      "value": 0.42,
+      "ci95": [
+       0.224,
+       0.616
+      ],
+      "sigma": 0.1002
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r5w8",
+     "from": [
+      -1.003,
+      3.145
+     ],
+     "to": [
+      -1.798,
+      3.145
+     ],
+     "length_m": {
+      "value": 0.795,
+      "ci95": [
+       0.598,
+       0.992
+      ],
+      "sigma": 0.1003
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r5w9",
+     "from": [
+      -1.798,
+      3.145
+     ],
+     "to": [
+      -1.798,
+      3.643
+     ],
+     "length_m": {
+      "value": 0.499,
+      "ci95": [
+       0.302,
+       0.695
+      ],
+      "sigma": 0.1002
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r5w10",
+     "from": [
+      -1.798,
+      3.643
+     ],
+     "to": [
+      0.112,
+      3.643
+     ],
+     "length_m": {
+      "value": 1.91,
+      "ci95": [
+       1.712,
+       2.108
+      ],
+      "sigma": 0.1011
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r5w11",
+     "from": [
+      0.112,
+      3.643
+     ],
+     "to": [
+      0.112,
+      2.154
+     ],
+     "length_m": {
+      "value": 1.49,
+      "ci95": [
+       1.461,
+       1.518
+      ],
+      "sigma": 0.0145
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    }
+   ],
+   "dimensions_m": {
+    "along_x": {
+     "value": 1.91,
+     "ci95": [
+      1.712,
+      2.108
+     ],
+     "sigma": 0.1011,
+     "ends_measured": false
+    },
+    "along_z": {
+     "value": 1.816,
+     "ci95": [
+      1.618,
+      2.014
+     ],
+     "sigma": 0.101,
+     "ends_measured": false
+    }
+   },
+   "floor_area_m2": {
+    "value": 2.76,
+    "ci95": [
+     2.5,
+     3.02
+    ],
+    "sigma": 0.1338
+   },
+   "perimeter_m": 8.65,
+   "ceiling_height_m": {
+    "value": null,
+    "ci95": [
+     2.3,
+     3.3
+    ],
+    "sigma": null,
+    "status": "not_observed",
+    "note": "capture did not see the ceiling over this room; prior range only"
+   },
+   "name": "Room 5"
+  },
+  {
+   "id": "room6",
+   "polygon_m": [
+    [
+     5.447,
+     3.014
+    ],
+    [
+     5.447,
+     4.194
+    ],
+    [
+     6.42,
+     4.194
+    ],
+    [
+     6.42,
+     5.843
+    ],
+    [
+     8.558,
+     5.843
+    ],
+    [
+     8.558,
+     3.014
+    ]
+   ],
+   "walls": [
+    {
+     "id": "r6w0",
+     "from": [
+      5.447,
+      3.014
+     ],
+     "to": [
+      5.447,
+      4.194
+     ],
+     "length_m": {
+      "value": 1.18,
+      "ci95": [
+       1.157,
+       1.202
+      ],
+      "sigma": 0.0115
+     },
+     "plane_measured": false,
+     "ends_measured": true
+    },
+    {
+     "id": "r6w1",
+     "from": [
+      5.447,
+      4.194
+     ],
+     "to": [
+      6.42,
+      4.194
+     ],
+     "length_m": {
+      "value": 0.973,
+      "ci95": [
+       0.776,
+       1.171
+      ],
+      "sigma": 0.1008
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r6w2",
+     "from": [
+      6.42,
+      4.194
+     ],
+     "to": [
+      6.42,
+      5.843
+     ],
+     "length_m": {
+      "value": 1.649,
+      "ci95": [
+       1.62,
+       1.679
+      ],
+      "sigma": 0.0151
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r6w3",
+     "from": [
+      6.42,
+      5.843
+     ],
+     "to": [
+      8.558,
+      5.843
+     ],
+     "length_m": {
+      "value": 2.138,
+      "ci95": [
+       2.101,
+       2.174
+      ],
+      "sigma": 0.0187
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r6w4",
+     "from": [
+      8.558,
+      5.843
+     ],
+     "to": [
+      8.558,
+      3.014
+     ],
+     "length_m": {
+      "value": 2.829,
+      "ci95": [
+       2.786,
+       2.872
+      ],
+      "sigma": 0.0218
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r6w5",
+     "from": [
+      8.558,
+      3.014
+     ],
+     "to": [
+      5.447,
+      3.014
+     ],
+     "length_m": {
+      "value": 3.111,
+      "ci95": [
+       2.91,
+       3.312
+      ],
+      "sigma": 0.1025
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    }
+   ],
+   "dimensions_m": {
+    "along_x": {
+     "value": 3.111,
+     "ci95": [
+      2.91,
+      3.312
+     ],
+     "sigma": 0.1025,
+     "ends_measured": false
+    },
+    "along_z": {
+     "value": 2.829,
+     "ci95": [
+      2.786,
+      2.872
+     ],
+     "sigma": 0.0218,
+     "ends_measured": true
+    }
+   },
+   "floor_area_m2": {
+    "value": 7.2,
+    "ci95": [
+     6.86,
+     7.53
+    ],
+    "sigma": 0.1714
+   },
+   "perimeter_m": 11.88,
+   "ceiling_height_m": {
+    "value": null,
+    "ci95": [
+     2.3,
+     3.3
+    ],
+    "sigma": null,
+    "status": "not_observed",
+    "note": "capture did not see the ceiling over this room; prior range only"
+   },
+   "name": "Room 6"
+  },
+  {
+   "id": "room7",
+   "polygon_m": [
+    [
+     -4.633,
+     4.374
+    ],
+    [
+     -4.633,
+     4.24
+    ],
+    [
+     -4.978,
+     4.24
+    ],
+    [
+     -4.978,
+     4.96
+    ],
+    [
+     -4.603,
+     4.96
+    ],
+    [
+     -4.603,
+     6.794
+    ],
+    [
+     -1.318,
+     6.794
+    ],
+    [
+     -1.318,
+     4.374
+    ]
+   ],
+   "walls": [
+    {
+     "id": "r7w0",
+     "from": [
+      -4.633,
+      4.374
+     ],
+     "to": [
+      -4.633,
+      4.24
+     ],
+     "length_m": {
+      "value": 0.134,
+      "ci95": [
+       -0.062,
+       0.33
+      ],
+      "sigma": 0.1001
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r7w1",
+     "from": [
+      -4.633,
+      4.24
+     ],
+     "to": [
+      -4.978,
+      4.24
+     ],
+     "length_m": {
+      "value": 0.345,
+      "ci95": [
+       0.149,
+       0.541
+      ],
+      "sigma": 0.1002
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r7w2",
+     "from": [
+      -4.978,
+      4.24
+     ],
+     "to": [
+      -4.978,
+      4.96
+     ],
+     "length_m": {
+      "value": 0.72,
+      "ci95": [
+       0.524,
+       0.916
+      ],
+      "sigma": 0.1003
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r7w3",
+     "from": [
+      -4.978,
+      4.96
+     ],
+     "to": [
+      -4.603,
+      4.96
+     ],
+     "length_m": {
+      "value": 0.375,
+      "ci95": [
+       0.179,
+       0.571
+      ],
+      "sigma": 0.1002
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r7w4",
+     "from": [
+      -4.603,
+      4.96
+     ],
+     "to": [
+      -4.603,
+      6.794
+     ],
+     "length_m": {
+      "value": 1.834,
+      "ci95": [
+       1.636,
+       2.032
+      ],
+      "sigma": 0.1011
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r7w5",
+     "from": [
+      -4.603,
+      6.794
+     ],
+     "to": [
+      -1.318,
+      6.794
+     ],
+     "length_m": {
+      "value": 3.285,
+      "ci95": [
+       3.084,
+       3.486
+      ],
+      "sigma": 0.1027
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r7w6",
+     "from": [
+      -1.318,
+      6.794
+     ],
+     "to": [
+      -1.318,
+      4.374
+     ],
+     "length_m": {
+      "value": 2.42,
+      "ci95": [
+       2.221,
+       2.619
+      ],
+      "sigma": 0.1017
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r7w7",
+     "from": [
+      -1.318,
+      4.374
+     ],
+     "to": [
+      -4.633,
+      4.374
+     ],
+     "length_m": {
+      "value": 3.315,
+      "ci95": [
+       3.114,
+       3.516
+      ],
+      "sigma": 0.1028
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    }
+   ],
+   "dimensions_m": {
+    "along_x": {
+     "value": 3.66,
+     "ci95": [
+      3.457,
+      3.863
+     ],
+     "sigma": 0.1034,
+     "ends_measured": false
+    },
+    "along_z": {
+     "value": 2.554,
+     "ci95": [
+      2.354,
+      2.754
+     ],
+     "sigma": 0.1018,
+     "ends_measured": false
+    }
+   },
+   "floor_area_m2": {
+    "value": 8.22,
+    "ci95": [
+     7.65,
+     8.78
+    ],
+    "sigma": 0.2885
+   },
+   "perimeter_m": 12.43,
+   "ceiling_height_m": {
+    "value": null,
+    "ci95": [
+     2.3,
+     3.3
+    ],
+    "sigma": null,
+    "status": "not_observed",
+    "note": "capture did not see the ceiling over this room; prior range only"
+   },
+   "name": "Room 7"
+  },
+  {
+   "id": "room8",
+   "polygon_m": [
+    [
+     -1.237,
+     3.853
+    ],
+    [
+     -1.237,
+     6.836
+    ],
+    [
+     1.824,
+     6.836
+    ],
+    [
+     1.824,
+     5.088
+    ],
+    [
+     2.657,
+     5.088
+    ],
+    [
+     2.657,
+     3.853
+    ]
+   ],
+   "walls": [
+    {
+     "id": "r8w0",
+     "from": [
+      -1.237,
+      3.853
+     ],
+     "to": [
+      -1.237,
+      6.836
+     ],
+     "length_m": {
+      "value": 2.983,
+      "ci95": [
+       2.94,
+       3.026
+      ],
+      "sigma": 0.0219
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r8w1",
+     "from": [
+      -1.237,
+      6.836
+     ],
+     "to": [
+      1.824,
+      6.836
+     ],
+     "length_m": {
+      "value": 3.061,
+      "ci95": [
+       3.016,
+       3.105
+      ],
+      "sigma": 0.0227
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r8w2",
+     "from": [
+      1.824,
+      6.836
+     ],
+     "to": [
+      1.824,
+      5.088
+     ],
+     "length_m": {
+      "value": 1.748,
+      "ci95": [
+       1.72,
+       1.776
+      ],
+      "sigma": 0.0144
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r8w3",
+     "from": [
+      1.824,
+      5.088
+     ],
+     "to": [
+      2.657,
+      5.088
+     ],
+     "length_m": {
+      "value": 0.833,
+      "ci95": [
+       0.805,
+       0.861
+      ],
+      "sigma": 0.0142
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r8w4",
+     "from": [
+      2.657,
+      5.088
+     ],
+     "to": [
+      2.657,
+      3.853
+     ],
+     "length_m": {
+      "value": 1.235,
+      "ci95": [
+       1.212,
+       1.257
+      ],
+      "sigma": 0.0115
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r8w5",
+     "from": [
+      2.657,
+      3.853
+     ],
+     "to": [
+      -1.237,
+      3.853
+     ],
+     "length_m": {
+      "value": 3.894,
+      "ci95": [
+       3.834,
+       3.953
+      ],
+      "sigma": 0.0304
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    }
+   ],
+   "dimensions_m": {
+    "along_x": {
+     "value": 3.894,
+     "ci95": [
+      3.834,
+      3.953
+     ],
+     "sigma": 0.0304,
+     "ends_measured": true
+    },
+    "along_z": {
+     "value": 2.983,
+     "ci95": [
+      2.94,
+      3.026
+     ],
+     "sigma": 0.0219,
+     "ends_measured": true
+    }
+   },
+   "floor_area_m2": {
+    "value": 10.16,
+    "ci95": [
+     10.01,
+     10.31
+    ],
+    "sigma": 0.0776
+   },
+   "perimeter_m": 13.75,
+   "ceiling_height_m": {
+    "value": null,
+    "ci95": [
+     2.3,
+     3.3
+    ],
+    "sigma": null,
+    "status": "not_observed",
+    "note": "capture did not see the ceiling over this room; prior range only"
+   },
+   "name": "Room 8"
+  },
+  {
+   "id": "room9",
+   "polygon_m": [
+    [
+     3.622,
+     4.075
+    ],
+    [
+     3.622,
+     5.113
+    ],
+    [
+     4.877,
+     5.113
+    ],
+    [
+     4.877,
+     4.435
+    ],
+    [
+     5.155,
+     4.435
+    ],
+    [
+     5.155,
+     4.075
+    ]
+   ],
+   "walls": [
+    {
+     "id": "r9w0",
+     "from": [
+      3.622,
+      4.075
+     ],
+     "to": [
+      3.622,
+      5.113
+     ],
+     "length_m": {
+      "value": 1.038,
+      "ci95": [
+       0.842,
+       1.235
+      ],
+      "sigma": 0.1005
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r9w1",
+     "from": [
+      3.622,
+      5.113
+     ],
+     "to": [
+      4.877,
+      5.113
+     ],
+     "length_m": {
+      "value": 1.255,
+      "ci95": [
+       1.057,
+       1.453
+      ],
+      "sigma": 0.1012
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r9w2",
+     "from": [
+      4.877,
+      5.113
+     ],
+     "to": [
+      4.877,
+      4.435
+     ],
+     "length_m": {
+      "value": 0.678,
+      "ci95": [
+       0.482,
+       0.875
+      ],
+      "sigma": 0.1003
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r9w3",
+     "from": [
+      4.877,
+      4.435
+     ],
+     "to": [
+      5.155,
+      4.435
+     ],
+     "length_m": {
+      "value": 0.278,
+      "ci95": [
+       0.08,
+       0.475
+      ],
+      "sigma": 0.1005
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r9w4",
+     "from": [
+      5.155,
+      4.435
+     ],
+     "to": [
+      5.155,
+      4.075
+     ],
+     "length_m": {
+      "value": 0.36,
+      "ci95": [
+       0.164,
+       0.556
+      ],
+      "sigma": 0.1002
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r9w5",
+     "from": [
+      5.155,
+      4.075
+     ],
+     "to": [
+      3.622,
+      4.075
+     ],
+     "length_m": {
+      "value": 1.533,
+      "ci95": [
+       1.496,
+       1.569
+      ],
+      "sigma": 0.0186
+     },
+     "plane_measured": false,
+     "ends_measured": true
+    }
+   ],
+   "dimensions_m": {
+    "along_x": {
+     "value": 1.533,
+     "ci95": [
+      1.496,
+      1.569
+     ],
+     "sigma": 0.0186,
+     "ends_measured": true
+    },
+    "along_z": {
+     "value": 1.038,
+     "ci95": [
+      0.842,
+      1.235
+     ],
+     "sigma": 0.1005,
+     "ends_measured": false
+    }
+   },
+   "floor_area_m2": {
+    "value": 1.4,
+    "ci95": [
+     1.22,
+     1.59
+    ],
+    "sigma": 0.0929
+   },
+   "perimeter_m": 5.14,
+   "ceiling_height_m": {
+    "value": null,
+    "ci95": [
+     2.3,
+     3.3
+    ],
+    "sigma": null,
+    "status": "not_observed",
+    "note": "capture did not see the ceiling over this room; prior range only"
+   },
+   "name": "Room 9"
+  },
+  {
+   "id": "room10",
+   "polygon_m": [
+    [
+     4.927,
+     5.246
+    ],
+    [
+     2.734,
+     5.246
+    ],
+    [
+     2.734,
+     5.875
+    ],
+    [
+     2.698,
+     5.875
+    ],
+    [
+     2.698,
+     9.82
+    ],
+    [
+     3.22,
+     9.82
+    ],
+    [
+     3.22,
+     7.03
+    ],
+    [
+     4.23,
+     7.03
+    ],
+    [
+     4.23,
+     6.527
+    ],
+    [
+     4.927,
+     6.527
+    ]
+   ],
+   "walls": [
+    {
+     "id": "r10w0",
+     "from": [
+      4.927,
+      5.246
+     ],
+     "to": [
+      2.734,
+      5.246
+     ],
+     "length_m": {
+      "value": 2.193,
+      "ci95": [
+       2.159,
+       2.227
+      ],
+      "sigma": 0.0172
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r10w1",
+     "from": [
+      2.734,
+      5.246
+     ],
+     "to": [
+      2.734,
+      5.875
+     ],
+     "length_m": {
+      "value": 0.629,
+      "ci95": [
+       0.432,
+       0.826
+      ],
+      "sigma": 0.1003
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r10w2",
+     "from": [
+      2.734,
+      5.875
+     ],
+     "to": [
+      2.698,
+      5.875
+     ],
+     "length_m": {
+      "value": 0.036,
+      "ci95": [
+       0.018,
+       0.054
+      ],
+      "sigma": 0.0091
+     },
+     "plane_measured": false,
+     "ends_measured": true
+    },
+    {
+     "id": "r10w3",
+     "from": [
+      2.698,
+      5.875
+     ],
+     "to": [
+      2.698,
+      9.82
+     ],
+     "length_m": {
+      "value": 3.945,
+      "ci95": [
+       3.741,
+       4.149
+      ],
+      "sigma": 0.1039
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r10w4",
+     "from": [
+      2.698,
+      9.82
+     ],
+     "to": [
+      3.22,
+      9.82
+     ],
+     "length_m": {
+      "value": 0.522,
+      "ci95": [
+       0.325,
+       0.718
+      ],
+      "sigma": 0.1004
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r10w5",
+     "from": [
+      3.22,
+      9.82
+     ],
+     "to": [
+      3.22,
+      7.03
+     ],
+     "length_m": {
+      "value": 2.79,
+      "ci95": [
+       2.59,
+       2.99
+      ],
+      "sigma": 0.102
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r10w6",
+     "from": [
+      3.22,
+      7.03
+     ],
+     "to": [
+      4.23,
+      7.03
+     ],
+     "length_m": {
+      "value": 1.011,
+      "ci95": [
+       0.813,
+       1.208
+      ],
+      "sigma": 0.1008
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r10w7",
+     "from": [
+      4.23,
+      7.03
+     ],
+     "to": [
+      4.23,
+      6.527
+     ],
+     "length_m": {
+      "value": 0.502,
+      "ci95": [
+       0.306,
+       0.699
+      ],
+      "sigma": 0.1004
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r10w8",
+     "from": [
+      4.23,
+      6.527
+     ],
+     "to": [
+      4.927,
+      6.527
+     ],
+     "length_m": {
+      "value": 0.697,
+      "ci95": [
+       0.674,
+       0.72
+      ],
+      "sigma": 0.0118
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    },
+    {
+     "id": "r10w9",
+     "from": [
+      4.927,
+      6.527
+     ],
+     "to": [
+      4.927,
+      5.246
+     ],
+     "length_m": {
+      "value": 1.282,
+      "ci95": [
+       1.257,
+       1.306
+      ],
+      "sigma": 0.0125
+     },
+     "plane_measured": true,
+     "ends_measured": true
+    }
+   ],
+   "dimensions_m": {
+    "along_x": {
+     "value": 2.229,
+     "ci95": [
+      2.194,
+      2.264
+     ],
+     "sigma": 0.0177,
+     "ends_measured": true
+    },
+    "along_z": {
+     "value": 4.574,
+     "ci95": [
+      4.368,
+      4.78
+     ],
+     "sigma": 0.1052,
+     "ends_measured": false
+    }
+   },
+   "floor_area_m2": {
+    "value": 5.06,
+    "ci95": [
+     4.55,
+     5.57
+    ],
+    "sigma": 0.26
+   },
+   "perimeter_m": 13.61,
+   "ceiling_height_m": {
+    "value": null,
+    "ci95": [
+     2.3,
+     3.3
+    ],
+    "sigma": null,
+    "status": "not_observed",
+    "note": "capture did not see the ceiling over this room; prior range only"
+   },
+   "name": "Room 10"
+  },
+  {
+   "id": "room11",
+   "polygon_m": [
+    [
+     5.196,
+     5.905
+    ],
+    [
+     5.196,
+     6.7
+    ],
+    [
+     5.432,
+     6.7
+    ],
+    [
+     5.432,
+     6.94
+    ],
+    [
+     8.558,
+     6.94
+    ],
+    [
+     8.558,
+     5.905
+    ]
+   ],
+   "walls": [
+    {
+     "id": "r11w0",
+     "from": [
+      5.196,
+      5.905
+     ],
+     "to": [
+      5.196,
+      6.7
+     ],
+     "length_m": {
+      "value": 0.795,
+      "ci95": [
+       0.598,
+       0.992
+      ],
+      "sigma": 0.1003
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r11w1",
+     "from": [
+      5.196,
+      6.7
+     ],
+     "to": [
+      5.432,
+      6.7
+     ],
+     "length_m": {
+      "value": 0.236,
+      "ci95": [
+       0.04,
+       0.432
+      ],
+      "sigma": 0.1002
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r11w2",
+     "from": [
+      5.432,
+      6.7
+     ],
+     "to": [
+      5.432,
+      6.94
+     ],
+     "length_m": {
+      "value": 0.24,
+      "ci95": [
+       0.044,
+       0.436
+      ],
+      "sigma": 0.1002
+     },
+     "plane_measured": false,
+     "ends_measured": false
+    },
+    {
+     "id": "r11w3",
+     "from": [
+      5.432,
+      6.94
+     ],
+     "to": [
+      8.558,
+      6.94
+     ],
+     "length_m": {
+      "value": 3.126,
+      "ci95": [
+       2.925,
+       3.327
+      ],
+      "sigma": 0.1026
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r11w4",
+     "from": [
+      8.558,
+      6.94
+     ],
+     "to": [
+      8.558,
+      5.905
+     ],
+     "length_m": {
+      "value": 1.035,
+      "ci95": [
+       0.838,
+       1.232
+      ],
+      "sigma": 0.1004
+     },
+     "plane_measured": true,
+     "ends_measured": false
+    },
+    {
+     "id": "r11w5",
+     "from": [
+      8.558,
+      5.905
+     ],
+     "to": [
+      5.196,
+      5.905
+     ],
+     "length_m": {
+      "value": 3.362,
+      "ci95": [
+       3.313,
+       3.41
+      ],
+      "sigma": 0.0247
+     },
+     "plane_measured": false,
+     "ends_measured": true
+    }
+   ],
+   "dimensions_m": {
+    "along_x": {
+     "value": 3.362,
+     "ci95": [
+      3.313,
+      3.41
+     ],
+     "sigma": 0.0247,
+     "ends_measured": true
+    },
+    "along_z": {
+     "value": 1.035,
+     "ci95": [
+      0.838,
+      1.232
+     ],
+     "sigma": 0.1004,
+     "ends_measured": false
+    }
+   },
+   "floor_area_m2": {
+    "value": 3.42,
+    "ci95": [
+     3.07,
+     3.77
+    ],
+    "sigma": 0.1789
+   },
+   "perimeter_m": 8.79,
+   "ceiling_height_m": {
+    "value": null,
+    "ci95": [
+     2.3,
+     3.3
+    ],
+    "sigma": null,
+    "status": "not_observed",
+    "note": "capture did not see the ceiling over this room; prior range only"
+   },
+   "name": "Room 11"
+  }
+ ],
+ "openings": [
+  {
+   "id": "op0",
+   "kind": "door",
+   "axis": "z",
+   "coord": 5.113,
+   "span": [
+    2.773,
+    3.285
+   ],
+   "width_m": {
+    "value": 0.512,
+    "ci95": [
+     0.48,
+     0.544
+    ],
+    "sigma": 0.0163
+   },
+   "rooms": [
+    "room10"
+   ]
+  },
+  {
+   "id": "op1",
+   "kind": "door",
+   "axis": "z",
+   "coord": -0.334,
+   "span": [
+    3.974,
+    4.568
+   ],
+   "width_m": {
+    "value": 0.593,
+    "ci95": [
+     0.562,
+     0.625
+    ],
+    "sigma": 0.0162
+   },
+   "rooms": [
+    "room1",
+    "room3"
+   ]
+  },
+  {
+   "id": "op2",
+   "kind": "door",
+   "axis": "z",
+   "coord": 0.798,
+   "span": [
+    3.907,
+    4.58
+   ],
+   "width_m": {
+    "value": 0.673,
+    "ci95": [
+     0.641,
+     0.704
+    ],
+    "sigma": 0.0161
+   },
+   "rooms": [
+    "room3",
+    "room4"
+   ]
+  },
+  {
+   "id": "op3",
+   "kind": "door",
+   "axis": "x",
+   "coord": 2.676,
+   "span": [
+    -0.19,
+    0.666
+   ],
+   "width_m": {
+    "value": 0.857,
+    "ci95": [
+     0.825,
+     0.889
+    ],
+    "sigma": 0.0163
+   },
+   "rooms": [
+    "room2",
+    "room3"
+   ]
+  },
+  {
+   "id": "op4",
+   "kind": "door",
+   "axis": "z",
+   "coord": 0.563,
+   "span": [
+    0.479,
+    1.114
+   ],
+   "width_m": {
+    "value": 0.634,
+    "ci95": [
+     0.591,
+     0.678
+    ],
+    "sigma": 0.0223
+   },
+   "rooms": [
+    "room2",
+    "room4"
+   ]
+  },
+  {
+   "id": "op5",
+   "kind": "door",
+   "axis": "x",
+   "coord": 3.603,
+   "span": [
+    4.087,
+    5.016
+   ],
+   "width_m": {
+    "value": 0.929,
+    "ci95": [
+     0.894,
+     0.964
+    ],
+    "sigma": 0.0178
+   },
+   "rooms": [
+    "room9"
+   ]
+  },
+  {
+   "id": "op6",
+   "kind": "door",
+   "axis": "x",
+   "coord": 2.734,
+   "span": [
+    4.048,
+    5.005
+   ],
+   "width_m": {
+    "value": 0.958,
+    "ci95": [
+     0.925,
+     0.991
+    ],
+    "sigma": 0.0168
+   },
+   "rooms": [
+    "room8"
+   ]
+  },
+  {
+   "id": "op7",
+   "kind": "door",
+   "axis": "z",
+   "coord": 5.843,
+   "span": [
+    7.611,
+    8.47
+   ],
+   "width_m": {
+    "value": 0.859,
+    "ci95": [
+     0.825,
+     0.892
+    ],
+    "sigma": 0.0171
+   },
+   "rooms": [
+    "room6",
+    "room11"
+   ]
+  },
+  {
+   "id": "op8",
+   "kind": "door",
+   "axis": "x",
+   "coord": 5.196,
+   "span": [
+    3.048,
+    4.086
+   ],
+   "width_m": {
+    "value": 1.038,
+    "ci95": [
+     1.006,
+     1.07
+    ],
+    "sigma": 0.0165
+   },
+   "rooms": [
+    "room4",
+    "room6"
+   ]
+  },
+  {
+   "id": "op9",
+   "kind": "passage",
+   "axis": "x",
+   "coord": 5.395,
+   "span": [
+    3.057,
+    4.112
+   ],
+   "width_m": {
+    "value": 1.054,
+    "ci95": [
+     1.016,
+     1.093
+    ],
+    "sigma": 0.0196
+   },
+   "rooms": [
+    "room4",
+    "room6"
+   ]
+  },
+  {
+   "id": "op10",
+   "kind": "passage",
+   "axis": "x",
+   "coord": 6.42,
+   "span": [
+    4.278,
+    5.285
+   ],
+   "width_m": {
+    "value": 1.007,
+    "ci95": [
+     0.97,
+     1.044
+    ],
+    "sigma": 0.0188
+   },
+   "rooms": [
+    "room6"
+   ]
+  },
+  {
+   "id": "op11",
+   "kind": "passage",
+   "axis": "z",
+   "coord": 5.843,
+   "span": [
+    5.215,
+    6.284
+   ],
+   "width_m": {
+    "value": 1.069,
+    "ci95": [
+     1.035,
+     1.103
+    ],
+    "sigma": 0.0174
+   },
+   "rooms": [
+    "room11"
+   ]
+  },
+  {
+   "id": "op12",
+   "kind": "passage",
+   "axis": "x",
+   "coord": -1.237,
+   "span": [
+    5.211,
+    6.476
+   ],
+   "width_m": {
+    "value": 1.265,
+    "ci95": [
+     1.229,
+     1.301
+    ],
+    "sigma": 0.0184
+   },
+   "rooms": [
+    "room7",
+    "room8"
+   ]
+  },
+  {
+   "id": "op13",
+   "kind": "passage",
+   "axis": "x",
+   "coord": 0.492,
+   "span": [
+    2.205,
+    3.595
+   ],
+   "width_m": {
+    "value": 1.39,
+    "ci95": [
+     1.356,
+     1.424
+    ],
+    "sigma": 0.0174
+   },
+   "rooms": [
+    "room5",
+    "room4"
+   ]
+  },
+  {
+   "id": "op14",
+   "kind": "passage",
+   "axis": "z",
+   "coord": 4.02,
+   "span": [
+    3.711,
+    5.137
+   ],
+   "width_m": {
+    "value": 1.426,
+    "ci95": [
+     1.392,
+     1.459
+    ],
+    "sigma": 0.0171
+   },
+   "rooms": [
+    "room4",
+    "room9"
+   ]
+  }
+ ],
+ "adjacency": [
+  [
+   "room1",
+   "room3"
+  ],
+  [
+   "room2",
+   "room3"
+  ],
+  [
+   "room2",
+   "room4"
+  ],
+  [
+   "room3",
+   "room4"
+  ],
+  [
+   "room4",
+   "room6"
+  ],
+  [
+   "room4",
+   "room9"
+  ],
+  [
+   "room5",
+   "room4"
+  ],
+  [
+   "room6",
+   "room11"
+  ],
+  [
+   "room7",
+   "room8"
+  ]
+ ],
+ "damage": [],
+ "concealed_damage_flags": [],
+ "scope": [
+  {
+   "surface": "room1/floor",
+   "item": "floor area (measure for finish)",
+   "quantity": {
+    "value": 5.73,
+    "ci95": [
+     5.43,
+     6.03
+    ],
+    "sigma": 0.1521
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room1/ceiling",
+   "item": "ceiling area (paint)",
+   "quantity": {
+    "value": 5.73,
+    "ci95": [
+     5.43,
+     6.03
+    ],
+    "sigma": 0.1521
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r1w0",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 6.25,
+    "ci95": [
+     5.11,
+     7.38
+    ],
+    "sigma": 0.5808
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r1w1",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 3.7,
+    "ci95": [
+     2.84,
+     4.56
+    ],
+    "sigma": 0.4371
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r1w2",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 0.58,
+    "ci95": [
+     0.46,
+     0.71
+    ],
+    "sigma": 0.0627
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r1w3",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 2.73,
+    "ci95": [
+     2.01,
+     3.46
+    ],
+    "sigma": 0.371
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r1w4",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 6.83,
+    "ci95": [
+     5.58,
+     8.07
+    ],
+    "sigma": 0.6345
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r1w5",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 6.43,
+    "ci95": [
+     5.15,
+     7.72
+    ],
+    "sigma": 0.6556
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room2/floor",
+   "item": "floor area (measure for finish)",
+   "quantity": {
+    "value": 7.91,
+    "ci95": [
+     7.8,
+     8.02
+    ],
+    "sigma": 0.0561
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room2/ceiling",
+   "item": "ceiling area (paint)",
+   "quantity": {
+    "value": 7.91,
+    "ci95": [
+     7.8,
+     8.02
+    ],
+    "sigma": 0.0561
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r2w0",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 6.83,
+    "ci95": [
+     5.59,
+     8.08
+    ],
+    "sigma": 0.6355
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r2w1",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 2.32,
+    "ci95": [
+     1.9,
+     2.75
+    ],
+    "sigma": 0.2169
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r2w2",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 1.14,
+    "ci95": [
+     0.92,
+     1.35
+    ],
+    "sigma": 0.1085
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r2w3",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 5.25,
+    "ci95": [
+     4.29,
+     6.21
+    ],
+    "sigma": 0.488
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r2w4",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 7.97,
+    "ci95": [
+     6.52,
+     9.42
+    ],
+    "sigma": 0.7408
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r2w5",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 7.57,
+    "ci95": [
+     6.19,
+     8.95
+    ],
+    "sigma": 0.7033
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room3/floor",
+   "item": "floor area (measure for finish)",
+   "quantity": {
+    "value": 1.89,
+    "ci95": [
+     1.62,
+     2.16
+    ],
+    "sigma": 0.1366
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room3/ceiling",
+   "item": "ceiling area (paint)",
+   "quantity": {
+    "value": 1.89,
+    "ci95": [
+     1.62,
+     2.16
+    ],
+    "sigma": 0.1366
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r3w0",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 2.67,
+    "ci95": [
+     2.19,
+     3.16
+    ],
+    "sigma": 0.249
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r3w1",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 5.15,
+    "ci95": [
+     4.07,
+     6.23
+    ],
+    "sigma": 0.5496
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r3w2",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 2.67,
+    "ci95": [
+     2.19,
+     3.16
+    ],
+    "sigma": 0.249
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r3w3",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 5.15,
+    "ci95": [
+     4.07,
+     6.23
+    ],
+    "sigma": 0.5496
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room4/floor",
+   "item": "floor area (measure for finish)",
+   "quantity": {
+    "value": 12.14,
+    "ci95": [
+     11.57,
+     12.71
+    ],
+    "sigma": 0.2909
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room4/ceiling",
+   "item": "ceiling area (paint)",
+   "quantity": {
+    "value": 12.14,
+    "ci95": [
+     11.57,
+     12.71
+    ],
+    "sigma": 0.2909
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r4w0",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 3.74,
+    "ci95": [
+     2.88,
+     4.61
+    ],
+    "sigma": 0.4406
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r4w1",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 0.65,
+    "ci95": [
+     0.11,
+     1.19
+    ],
+    "sigma": 0.2768
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r4w2",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 3.94,
+    "ci95": [
+     3.05,
+     4.83
+    ],
+    "sigma": 0.4549
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r4w3",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 8.22,
+    "ci95": [
+     6.64,
+     9.81
+    ],
+    "sigma": 0.8104
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r4w4",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 0.84,
+    "ci95": [
+     0.29,
+     1.39
+    ],
+    "sigma": 0.2815
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r4w5",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 4.17,
+    "ci95": [
+     3.24,
+     5.1
+    ],
+    "sigma": 0.4726
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r4w6",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 2.54,
+    "ci95": [
+     1.84,
+     3.24
+    ],
+    "sigma": 0.3589
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r4w7",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 1.31,
+    "ci95": [
+     0.73,
+     1.89
+    ],
+    "sigma": 0.2966
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r4w8",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 5.98,
+    "ci95": [
+     4.89,
+     7.07
+    ],
+    "sigma": 0.5559
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r4w9",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 10.44,
+    "ci95": [
+     8.47,
+     12.41
+    ],
+    "sigma": 1.0063
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room5/floor",
+   "item": "floor area (measure for finish)",
+   "quantity": {
+    "value": 2.76,
+    "ci95": [
+     2.5,
+     3.02
+    ],
+    "sigma": 0.1338
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room5/ceiling",
+   "item": "ceiling area (paint)",
+   "quantity": {
+    "value": 2.76,
+    "ci95": [
+     2.5,
+     3.02
+    ],
+    "sigma": 0.1338
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r5w0",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 0.78,
+    "ci95": [
+     0.23,
+     1.33
+    ],
+    "sigma": 0.2801
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r5w1",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 0.88,
+    "ci95": [
+     0.32,
+     1.44
+    ],
+    "sigma": 0.2833
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r5w2",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 3.0,
+    "ci95": [
+     2.24,
+     3.76
+    ],
+    "sigma": 0.3879
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r5w3",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 0.92,
+    "ci95": [
+     0.37,
+     1.48
+    ],
+    "sigma": 0.2837
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r5w4",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 0.85,
+    "ci95": [
+     0.3,
+     1.4
+    ],
+    "sigma": 0.2815
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r5w5",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 1.5,
+    "ci95": [
+     0.9,
+     2.09
+    ],
+    "sigma": 0.304
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r5w6",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 1.62,
+    "ci95": [
+     1.01,
+     2.23
+    ],
+    "sigma": 0.3093
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r5w7",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 1.13,
+    "ci95": [
+     0.57,
+     1.7
+    ],
+    "sigma": 0.2902
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r5w8",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 2.15,
+    "ci95": [
+     1.49,
+     2.8
+    ],
+    "sigma": 0.3359
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r5w9",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 1.35,
+    "ci95": [
+     0.76,
+     1.93
+    ],
+    "sigma": 0.2979
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r5w10",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 5.16,
+    "ci95": [
+     4.08,
+     6.24
+    ],
+    "sigma": 0.55
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r5w11",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 4.02,
+    "ci95": [
+     3.29,
+     4.76
+    ],
+    "sigma": 0.3746
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room6/floor",
+   "item": "floor area (measure for finish)",
+   "quantity": {
+    "value": 7.2,
+    "ci95": [
+     6.86,
+     7.53
+    ],
+    "sigma": 0.1714
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room6/ceiling",
+   "item": "ceiling area (paint)",
+   "quantity": {
+    "value": 7.2,
+    "ci95": [
+     6.86,
+     7.53
+    ],
+    "sigma": 0.1714
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r6w0",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 3.19,
+    "ci95": [
+     2.6,
+     3.77
+    ],
+    "sigma": 0.2966
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r6w1",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 2.63,
+    "ci95": [
+     1.91,
+     3.34
+    ],
+    "sigma": 0.365
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r6w2",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 4.45,
+    "ci95": [
+     3.64,
+     5.26
+    ],
+    "sigma": 0.4143
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r6w3",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 5.77,
+    "ci95": [
+     4.72,
+     6.82
+    ],
+    "sigma": 0.5369
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r6w4",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 7.64,
+    "ci95": [
+     6.25,
+     9.03
+    ],
+    "sigma": 0.7097
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r6w5",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 8.4,
+    "ci95": [
+     6.78,
+     10.02
+    ],
+    "sigma": 0.8255
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room7/floor",
+   "item": "floor area (measure for finish)",
+   "quantity": {
+    "value": 8.22,
+    "ci95": [
+     7.65,
+     8.78
+    ],
+    "sigma": 0.2885
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room7/ceiling",
+   "item": "ceiling area (paint)",
+   "quantity": {
+    "value": 8.22,
+    "ci95": [
+     7.65,
+     8.78
+    ],
+    "sigma": 0.2885
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r7w0",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 0.36,
+    "ci95": [
+     -0.17,
+     0.9
+    ],
+    "sigma": 0.2723
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r7w1",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 0.93,
+    "ci95": [
+     0.37,
+     1.49
+    ],
+    "sigma": 0.284
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r7w2",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 1.94,
+    "ci95": [
+     1.31,
+     2.58
+    ],
+    "sigma": 0.3252
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r7w3",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 1.01,
+    "ci95": [
+     0.45,
+     1.57
+    ],
+    "sigma": 0.2863
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r7w4",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 4.95,
+    "ci95": [
+     3.91,
+     6.0
+    ],
+    "sigma": 0.5336
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r7w5",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 8.87,
+    "ci95": [
+     7.17,
+     10.57
+    ],
+    "sigma": 0.8668
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r7w6",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 6.53,
+    "ci95": [
+     5.23,
+     7.84
+    ],
+    "sigma": 0.6644
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r7w7",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 8.95,
+    "ci95": [
+     7.24,
+     10.66
+    ],
+    "sigma": 0.874
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room8/floor",
+   "item": "floor area (measure for finish)",
+   "quantity": {
+    "value": 10.16,
+    "ci95": [
+     10.01,
+     10.31
+    ],
+    "sigma": 0.0776
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room8/ceiling",
+   "item": "ceiling area (paint)",
+   "quantity": {
+    "value": 10.16,
+    "ci95": [
+     10.01,
+     10.31
+    ],
+    "sigma": 0.0776
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r8w0",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 8.05,
+    "ci95": [
+     6.59,
+     9.52
+    ],
+    "sigma": 0.7481
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r8w1",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 8.26,
+    "ci95": [
+     6.76,
+     9.77
+    ],
+    "sigma": 0.7677
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r8w2",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 4.72,
+    "ci95": [
+     3.86,
+     5.58
+    ],
+    "sigma": 0.4387
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r8w3",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 2.25,
+    "ci95": [
+     1.83,
+     2.66
+    ],
+    "sigma": 0.2117
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r8w4",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 3.33,
+    "ci95": [
+     2.73,
+     3.94
+    ],
+    "sigma": 0.3103
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r8w5",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 10.51,
+    "ci95": [
+     8.6,
+     12.43
+    ],
+    "sigma": 0.977
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room9/floor",
+   "item": "floor area (measure for finish)",
+   "quantity": {
+    "value": 1.4,
+    "ci95": [
+     1.22,
+     1.59
+    ],
+    "sigma": 0.0929
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room9/ceiling",
+   "item": "ceiling area (paint)",
+   "quantity": {
+    "value": 1.4,
+    "ci95": [
+     1.22,
+     1.59
+    ],
+    "sigma": 0.0929
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r9w0",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 2.8,
+    "ci95": [
+     2.07,
+     3.54
+    ],
+    "sigma": 0.3755
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r9w1",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 3.39,
+    "ci95": [
+     2.57,
+     4.2
+    ],
+    "sigma": 0.4161
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r9w2",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 1.83,
+    "ci95": [
+     1.2,
+     2.46
+    ],
+    "sigma": 0.3195
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r9w3",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 0.75,
+    "ci95": [
+     0.2,
+     1.3
+    ],
+    "sigma": 0.2801
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r9w4",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 0.97,
+    "ci95": [
+     0.41,
+     1.53
+    ],
+    "sigma": 0.2851
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r9w5",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 4.14,
+    "ci95": [
+     3.38,
+     4.9
+    ],
+    "sigma": 0.3865
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room10/floor",
+   "item": "floor area (measure for finish)",
+   "quantity": {
+    "value": 5.06,
+    "ci95": [
+     4.55,
+     5.57
+    ],
+    "sigma": 0.26
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room10/ceiling",
+   "item": "ceiling area (paint)",
+   "quantity": {
+    "value": 5.06,
+    "ci95": [
+     4.55,
+     5.57
+    ],
+    "sigma": 0.26
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r10w0",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 5.92,
+    "ci95": [
+     4.84,
+     7.0
+    ],
+    "sigma": 0.5502
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r10w1",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 1.7,
+    "ci95": [
+     1.08,
+     2.31
+    ],
+    "sigma": 0.3132
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r10w2",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 0.1,
+    "ci95": [
+     0.05,
+     0.15
+    ],
+    "sigma": 0.0262
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r10w3",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 10.65,
+    "ci95": [
+     8.64,
+     12.66
+    ],
+    "sigma": 1.0254
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r10w4",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 1.41,
+    "ci95": [
+     0.82,
+     2.0
+    ],
+    "sigma": 0.3009
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r10w5",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 7.53,
+    "ci95": [
+     6.06,
+     9.0
+    ],
+    "sigma": 0.7499
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r10w6",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 2.73,
+    "ci95": [
+     2.0,
+     3.46
+    ],
+    "sigma": 0.3714
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r10w7",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 1.36,
+    "ci95": [
+     0.77,
+     1.94
+    ],
+    "sigma": 0.2987
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r10w8",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 1.88,
+    "ci95": [
+     1.53,
+     2.23
+    ],
+    "sigma": 0.1771
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r10w9",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 3.46,
+    "ci95": [
+     2.83,
+     4.09
+    ],
+    "sigma": 0.3223
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room11/floor",
+   "item": "floor area (measure for finish)",
+   "quantity": {
+    "value": 3.42,
+    "ci95": [
+     3.07,
+     3.77
+    ],
+    "sigma": 0.1789
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "room11/ceiling",
+   "item": "ceiling area (paint)",
+   "quantity": {
+    "value": 3.42,
+    "ci95": [
+     3.07,
+     3.77
+    ],
+    "sigma": 0.1789
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r11w0",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 2.15,
+    "ci95": [
+     1.49,
+     2.8
+    ],
+    "sigma": 0.3359
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r11w1",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 0.64,
+    "ci95": [
+     0.09,
+     1.18
+    ],
+    "sigma": 0.2769
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r11w2",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 0.65,
+    "ci95": [
+     0.1,
+     1.19
+    ],
+    "sigma": 0.2771
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r11w3",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 8.44,
+    "ci95": [
+     6.82,
+     10.07
+    ],
+    "sigma": 0.8291
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r11w4",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 2.79,
+    "ci95": [
+     2.06,
+     3.53
+    ],
+    "sigma": 0.3747
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  },
+  {
+   "surface": "r11w5",
+   "item": "wall area (paint, gross of openings)",
+   "quantity": {
+    "value": 9.08,
+    "ci95": [
+     7.42,
+     10.73
+    ],
+    "sigma": 0.8431
+   },
+   "unit": "m2",
+   "reason": "base quantity"
+  }
+ ],
+ "meta": {
+  "drift": {
+   "mode": "on",
+   "yaw_measured_range_deg": 3.2281913444460524,
+   "yaw_corrected": false,
+   "n_segments": 20,
+   "jumps": 1,
+   "edges_x": 19,
+   "edges_z": 24,
+   "rms_edge_residual_x_m": 0.022543028742521218,
+   "rms_edge_residual_z_m": 0.035181037202205216,
+   "max_correction_m": 0.2103440773687994,
+   "yaw_range_deg": 0.0
+  },
+  "drift_sigma_per_m": 0.00577,
+  "tier": "lidar",
+  "input": {},
+  "frames_used": 526,
+  "manhattan_theta_deg": 86.237,
+  "floor_y": -1.4088,
+  "global_ceiling": null,
+  "n_walls": 93,
+  "damage_detector": {
+   "frames": 115,
+   "walls": 37,
+   "rejected": {
+    "small": 58,
+    "neutral_dark": 2,
+    "edge_not_crack": 3,
+    "floor_shadow": 1,
+    "not_flush": 1
+   },
+   "elevations": "/home/claude/out/floor_only_lidar/walls"
+  },
+  "total_floor_area_m2": 65.89,
+  "runtime_s": 60.0
+ }
+}
