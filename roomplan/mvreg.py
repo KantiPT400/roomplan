@@ -186,7 +186,86 @@ def layout(views, pairs, log=print):
                                 v.depth = 1.0 / np.maximum(sol[0] * v.disp + sol[1], 1e-3)
                 C[k], c[k], comp_of[k] = Ck, ck, ci
                 stack.append(k)
+    C, c = refine(views, edges, C, c, comp_of, log)
     return C, c, comp_of, comps, edges
+
+
+def _yaw_of(M):
+    """Heading of a rotation that is (nearly) about the vertical axis."""
+    return float(np.arctan2(M[0, 2], M[2, 2]))
+
+
+def refine(views, edges, C, c, comp_of, log=print, iters=30, yaw_gate=np.radians(15), t_gate=0.4):
+    """Global solve after the spanning-tree initialisation.
+
+    Each camera's tilt (gravity) is fixed - its own floor normal if it has one, else the tree's. Headings are
+    averaged over ALL registered edges (Gauss-Seidel on wrapped residuals, edges off by > 15 deg ignored),
+    then camera centres are solved by robust least squares over all metrically scaled edges, with every
+    camera at the same height above the floor (the camera-height prior), so vertical drift cannot build up.
+    """
+    idx = sorted(C)
+    if not idx:
+        return C, c
+    tilt = {i: (views[i].cal["Rg"] if views[i].cal is not None else
+                Rotation.from_euler("y", -_yaw_of(C[i])).as_matrix() @ C[i]) for i in idx}
+    yaw = {i: _yaw_of(C[i] @ np.linalg.inv(tilt[i])) for i in idx}
+    E = [(a, b, r) for a, b, r in edges if a in C and b in C and comp_of[a] == comp_of[b]]
+    meas = []
+    for a, b, r in E:
+        # C_b = C_a R^T  ->  Ry(yaw_b) T_b = Ry(yaw_a) T_a R^T  ->  Ry(yaw_b - yaw_a) = T_a R^T T_b^-1
+        M = tilt[a] @ r["R"].T @ np.linalg.inv(tilt[b])
+        meas.append((a, b, _yaw_of(M), r["inliers"]))
+    roots = {}
+    for i in idx:
+        roots.setdefault(comp_of[i], i)
+    wrap = lambda x: (x + np.pi) % (2 * np.pi) - np.pi
+    for _ in range(iters):
+        for i in idx:
+            if i in roots.values():
+                continue
+            sx = sy = 0.0
+            for a, b, psi, w in meas:
+                if b == i:
+                    pred = yaw[a] + psi
+                elif a == i:
+                    pred = yaw[b] - psi
+                else:
+                    continue
+                if abs(wrap(pred - yaw[i])) > yaw_gate and _ > 3:
+                    continue
+                sx += w * np.cos(pred); sy += w * np.sin(pred)
+            if sx or sy:
+                yaw[i] = float(np.arctan2(sy, sx))
+    yaw_res = [abs(np.degrees(wrap(yaw[b] - yaw[a] - psi))) for a, b, psi, w in meas]
+    for i in idx:
+        C[i] = Rotation.from_euler("y", yaw[i]).as_matrix() @ tilt[i]
+    # translations: c_b - c_a = -C_a R^T t   (scaled edges only)
+    T = [(a, b, -C[a] @ r["R"].T @ r["t"], r["inliers"]) for a, b, r in E if r["scaled"] and np.linalg.norm(r["t"]) > 0]
+    pos = {i: k for k, i in enumerate(idx)}
+    n = len(idx)
+    X = np.array([c[i][[0, 2]] for i in idx])
+    w_edge = np.array([w for *_, w in T], float)
+    for it in range(8):
+        A = np.zeros((n, n)); B = np.zeros((n, 2))
+        for (a, b, d, w0), w in zip(T, w_edge):
+            ia, ib = pos[a], pos[b]
+            A[ia, ia] += w; A[ib, ib] += w; A[ia, ib] -= w; A[ib, ia] -= w
+            B[ib] += w * d[[0, 2]]; B[ia] -= w * d[[0, 2]]
+        for r_ in roots.values():
+            A[pos[r_], pos[r_]] += 1e3
+            B[pos[r_]] += 1e3 * X[pos[r_]]
+        A += 1e-4 * np.eye(n); B += 1e-4 * X
+        X = np.linalg.solve(A, B)
+        res = np.array([np.linalg.norm(X[pos[b]] - X[pos[a]] - d[[0, 2]]) for a, b, d, _ in T])
+        base = np.array([w0 for *_, w0 in T], float)
+        w_edge = base * np.where(res <= t_gate, 1.0, t_gate / np.maximum(res, 1e-6)) ** 2
+    for i in idx:
+        c[i] = np.array([X[pos[i]][0], 0.0, X[pos[i]][1]])     # equal camera height above the floor
+    if T:
+        log(f"refine: {len(meas)} yaw edges, median residual {np.median(yaw_res):.1f} deg; "
+            f"{len(T)} translation edges, median residual {np.median(res):.2f} m, "
+            f"{int((res > t_gate).sum())} down-weighted as outliers")
+    return C, c
 
 
 def write_pseudo(views, C, c, comp_of, out_dir, tier, extra_cols=None, prior=CAM_HEIGHT_PRIOR, fps=None):
