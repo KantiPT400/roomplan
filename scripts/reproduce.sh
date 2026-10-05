@@ -5,7 +5,7 @@
 #
 # sample_data must contain the three supplied Stray Scanner captures:
 #   single_room/<id>/  single_scan_floor_only/<id>/  single_scan_with_ceiling/<id>/
-# (each with rgb.mp4, depth/, odometry.csv, camera_matrix.csv). Runtime on a 2-core CPU: ~45-60 min.
+# (each with rgb.mp4, depth/, odometry.csv, camera_matrix.csv). Runtime on a 2-core CPU: ~45 min. Use requirements-lock.txt for bit-identical numbers.
 set -euo pipefail
 SAMPLE=$(realpath "$1"); OUT=$(realpath -m "${2:-out}")
 REPO=$(cd "$(dirname "$0")/.." && pwd)

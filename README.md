@@ -62,8 +62,9 @@ end-to-end on a rendered flat with exact ground truth).
 bash scripts/reproduce.sh /path/to/sample_data         # folders single_room/, single_scan_floor_only/, single_scan_with_ceiling/
 ```
 
-~55 min on a 2-core CPU. On a fresh clone it regenerated every LiDAR, drift, synthetic and staged-damage number
-bit for bit; the photo/video numbers need the versions in `requirements-lock.txt` (report section 5).
+~45 min on a 2-core CPU. On a fresh clone with `requirements-lock.txt` it regenerated every reported number bit
+for bit; with other library versions the LiDAR numbers still match exactly, the photo/video ones may not (report
+section 5).
 
 See [`docs/report.md`](docs/report.md) for what each number means and its limits. Fix loop:
 [`docs/fix_loop_declaration.md`](docs/fix_loop_declaration.md) (declaration, committed before the fix) and

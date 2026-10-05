@@ -52,7 +52,7 @@ Status: **done** = implemented and evidenced; **partial** = implemented, evidenc
 | Fix loop: declaration, root cause + evidence, shipped fix, before/after regenerable, diff | docs/fix_loop_declaration.md, docs/fix_loop_result.md, scripts/fixloop_regen.sh | done (prediction missed; post-mortem) |
 | Process evidence: commit history | git log | done |
 | README to running on a fresh capture in < 15 min | README.md | done |
-| Reproduction bundle | scripts/reproduce.sh, fetch_models.py, requirements-lock.txt, docs/benchmark/*.json | done (fresh clone: LiDAR, drift, synthetic, damage numbers bit-identical; photo/video need the locked versions) |
+| Reproduction bundle | scripts/reproduce.sh, fetch_models.py, requirements-lock.txt, docs/benchmark/*.json | done (fresh clone + requirements-lock.txt: every number bit-identical, 42 min) |
 | Benchmark report: gates at all tiers, repeatability, head-to-head, timing | docs/report.md section 5 | partial (no head-to-head) |
 | Technical report <= 6 pages | docs/report.md, docs/report.pdf | done |
 | Raw benchmark data | sample captures (supplied) + synthetic generator + manifests | partial (no tape data, no app exports) |

@@ -162,9 +162,11 @@ LiDAR walkthrough (no photo folders were supplied) and the clip turns faster tha
 how much of the input it used. The footprint intervals are wide on purpose: "confident garbage" is the failure
 we designed against.
 
-**Reproduction and stability.** `scripts/reproduce.sh` on a fresh clone with a fresh virtualenv (53 min on the
-2-core VM) regenerated every LiDAR, drift, synthetic and staged-damage number bit for bit
-(`docs/benchmark/benchmark_fresh_clone.json`). That install pulled onnxruntime 1.30 instead of 1.29; its mono
+**Reproduction and stability.** `scripts/reproduce.sh` on a fresh clone of the final commit with
+`requirements-lock.txt` (42 min on the 2-core VM) regenerated every number in this report bit for bit, photo and
+video tiers included (`docs/benchmark/benchmark_fresh_clone_locked.json`). An earlier fresh install without the
+lock file (`benchmark_fresh_clone_ort1.30.json`) also matched every LiDAR, drift, synthetic and staged-damage
+number, but it had pulled onnxruntime 1.30 instead of 1.29; its mono
 depth differs by ~2e-7 (relative), and the photo tier then merged three rooms into one (7 -> 5 rooms, footprint
 0.958 -> 0.937) and the video tier gave 3 rooms (footprint 0.74). The registrations had the same structure (109
 pairs, components 43 + 2); the two photo plans differ mainly by one wall segment, present in one and missing in
