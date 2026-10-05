@@ -24,7 +24,7 @@ class Grid:
         return (np.asarray(ij) + 0.5) * self.res + self.lo
 
 
-def wall_hits(scan: Scan, frame: int, floor_y: float, band=(0.3, 1.8), max_d=4.5, step=2):
+def wall_hits(scan: Scan, frame: int, floor_y: float, band=(-0.05, 3.5), max_d=4.5, step=2):
     P, _ = backproject(read_depth(scan, frame), scan.K_depth, 0.3, max_d, step)
     R, t = scan.pose(frame)
     W = P @ R.T + t
@@ -33,7 +33,7 @@ def wall_hits(scan: Scan, frame: int, floor_y: float, band=(0.3, 1.8), max_d=4.5
 
 
 def carve(scan: Scan, R2: np.ndarray, floor_y: float, frames=None, stride=10, res=0.03,
-          band=(0.3, 1.8), max_d=4.5, pad=0.5):
+          band=(-0.05, 3.5), max_d=4.5, pad=0.5):
     ids = frames if frames is not None else depth_frame_ids(scan, stride)
     per = []
     for f in ids:
